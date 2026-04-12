@@ -133,18 +133,23 @@ CREATE TRIGGER update_accounts_updated_at BEFORE UPDATE ON public.accounts FOR E
 CREATE TRIGGER update_cards_updated_at BEFORE UPDATE ON public.cards FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- 12. AUTO-CREATE PROFILE ON SIGNUP
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+CREATE INDEX IF NOT EXISTS profiles_email_idx ON public.profiles(email);
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, full_name)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email));
+  INSERT INTO public.profiles (user_id, full_name, email)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email), NEW.email);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+-- Sync existing profiles
+UPDATE public.profiles p
+SET email = u.email
+FROM auth.users u
+WHERE p.user_id = u.id AND p.email IS NULL;
 
 -- 13. RLS POLICIES - FAMILIES
 CREATE POLICY "Users can view their family"
