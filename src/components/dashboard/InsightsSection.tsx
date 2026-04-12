@@ -11,9 +11,9 @@ export const InsightsSection = () => {
       </div>
 
       <Card className="relative p-6 border-none bg-[#111111] rounded-[2rem] overflow-hidden group">
-        {/* Glowing Orange Border Effect */}
-        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-60" />
-        <div className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-transparent via-[#FF8C00] to-transparent opacity-60" />
+        {/* Glowing Border Effect */}
+        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-60" />
+        <div className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-transparent via-primary/50 to-transparent opacity-60" />
         
         <div className="flex gap-4">
           <div className="h-12 w-12 rounded-2xl bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-white/5">
@@ -21,9 +21,9 @@ export const InsightsSection = () => {
           </div>
           
           <div className="space-y-1">
-            <p className="text-xs font-black text-[#FF8C00] uppercase tracking-widest">Saldo do mês: R$-5188.</p>
+            <p className="text-xs font-black text-primary uppercase tracking-widest italic">Bem-vindo ao Novo Ciclo</p>
             <p className="text-sm text-[#7B7B7B] leading-snug font-medium">
-              Atenção: gastos acima da receita. Recomendamos revisar suas despesas fixas para o próximo ciclo.
+              Tudo pronto para começar! Adicione suas primeiras transações para que a IA possa analisar seu perfil financeiro.
             </p>
           </div>
         </div>
