@@ -1,6 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, CreditCard, Wallet, Settings, ChevronRight, ShoppingBag } from "lucide-react";
+import { LogOut, Users, CreditCard, Wallet, Settings, ChevronRight, ShoppingBag, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 import { useNavigate } from "react-router-dom";
 
