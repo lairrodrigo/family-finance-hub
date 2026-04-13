@@ -1,16 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, CreditCard, Wallet, Settings, ChevronRight, ShoppingBag, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { LogOut, Users, CreditCard, Wallet, Settings, ChevronRight, ShoppingBag } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
-  { icon: Users, label: "Família", description: "Gerenciar membros", to: "/family" },
-  { icon: CreditCard, label: "Cartões", description: "Gerenciar cartões", to: "/cards" },
-  { icon: Wallet, label: "Contas", description: "Gerenciar contas bancárias", to: "/accounts" },
-  { icon: Settings, label: "Configurações", description: "Preferências do app", to: "/settings" },
+  { icon: Users, label: "Família", description: "Membros e permissões", to: "/family" },
+  { icon: CreditCard, label: "Cartões", description: "Meus cartões registrados", to: "/cards" },
+  { icon: Wallet, label: "Contas", description: "Contas e saldos", to: "/accounts" },
+  { icon: Settings, label: "Ajustes", description: "Configurações do aplicativo", to: "/settings" },
 ];
 
 const MorePage = () => {
@@ -18,37 +16,43 @@ const MorePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="px-4 pt-12 animate-fade-in pb-32">
-      <h1 className="font-display text-2xl font-bold text-foreground">Mais</h1>
-      <p className="mt-1 text-sm text-muted-foreground truncate">{user?.email}</p>
+    <div className="px-4 pt-12 animate-fade-in pb-40 max-w-2xl mx-auto lg:pt-0">
+      <div className="flex flex-col gap-1 mb-10">
+        <h1 className="text-3xl font-bold text-white tracking-tight">Mais</h1>
+        <p className="text-sm font-medium text-white/20 truncate">{user?.email}</p>
+      </div>
 
-      <div className="mt-6 space-y-2">
+      <div className="grid gap-4">
         {menuItems.map(({ icon: Icon, label, description, to }) => (
           <button
             key={label}
             onClick={() => navigate(to)}
-            className="flex w-full items-center gap-4 rounded-2xl bg-card p-4 border border-border text-left transition-all hover:bg-muted/50 active:scale-[0.98]"
+            className="flex w-full items-center gap-5 rounded-[2.5rem] bg-[#0C0C0E] p-6 border border-white/[0.05] text-left transition-all hover:bg-[#121214] hover:scale-[1.02] hover:shadow-2xl shadow-black/40 group active:scale-[0.98]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Icon className="h-6 w-6 text-primary" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.03] border border-white/[0.05] transition-transform group-hover:scale-110 shadow-xl">
+              <Icon className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">{label}</p>
-              <p className="text-[10px] uppercase font-bold tracking-tight text-muted-foreground">{description}</p>
+              <p className="text-lg font-bold text-white tracking-tight leading-none mb-1.5">{label}</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20">{description}</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <div className="h-10 w-10 rounded-2xl bg-white/[0.02] flex items-center justify-center text-white/10 group-hover:text-white transition-colors">
+              <ChevronRight className="h-5 w-5" />
+            </div>
           </button>
         ))}
       </div>
 
-      <Button
-        variant="ghost"
-        className="mt-8 h-12 w-full text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl font-bold"
-        onClick={signOut}
-      >
-        <LogOut className="mr-2 h-4 w-4" />
-        Sair da conta
-      </Button>
+      <div className="mt-12 pt-12 border-t border-white/[0.05]">
+        <Button
+          variant="ghost"
+          className="h-16 w-full text-white/20 hover:text-destructive hover:bg-destructive/5 rounded-[2rem] font-bold uppercase tracking-[0.2em] text-[10px] transition-all"
+          onClick={signOut}
+        >
+          <LogOut className="mr-3 h-4 w-4" />
+          Sair da conta
+        </Button>
+      </div>
     </div>
   );
 };

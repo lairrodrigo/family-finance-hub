@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, ArrowLeftRight, Target, MoreHorizontal, Wallet } from "lucide-react";
+import { Home, ArrowLeftRight, Target, MoreHorizontal, Wallet, Users, Settings, ShoppingBag, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -13,48 +13,88 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { AppLogo } from "../ui/AppLogo";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Início" },
-  { to: "/transactions", icon: ArrowLeftRight, label: "Transações" },
+  { to: "/", icon: Home, label: "Visão Geral" },
+  { to: "/transactions", icon: ArrowLeftRight, label: "Extrato" },
+  { to: "/shopping", icon: ShoppingBag, label: "Compras" },
   { to: "/metas", icon: Target, label: "Metas" },
-  { to: "/add", icon: Plus, label: "Adicionar" },
-  { to: "/more", icon: MoreHorizontal, label: "Mais" },
+  { to: "/cards", icon: CreditCard, label: "Meus Cartões" },
+];
+
+const managementItems = [
+  { to: "/family", icon: Users, label: "Família" },
+  { to: "/settings", icon: Settings, label: "Configurações" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar className="border-r border-border bg-card">
-      <SidebarHeader className="h-16 flex items-center px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Wallet className="h-5 w-5" />
+    <Sidebar className="border-r border-white/[0.05] bg-[#0C0C0E]">
+      <SidebarHeader className="h-24 flex items-center px-8">
+        <div className="flex items-center gap-4">
+          <AppLogo size={40} className="hover:scale-110 transition-transform duration-500" />
+          <div className="flex flex-col">
+            <span className="text-base font-bold tracking-tight text-white uppercase">Divvy Money</span>
+            <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mt-0.5">Premium Access</span>
           </div>
-          <span className="text-lg font-bold tracking-tight">DivvyMoney</span>
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-wider text-muted-foreground">Menu Principal</SidebarGroupLabel>
+      
+      <SidebarContent className="px-4 gap-8 pt-6">
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10 mb-4 h-auto">Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="px-2 gap-1.5">
+            <SidebarMenu className="gap-2">
               {navItems.map(({ to, icon: Icon, label }) => {
-                const isActive = location.pathname === to;
+                const isActive = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
                 return (
                   <SidebarMenuItem key={to}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "h-11 px-4 transition-all hover:bg-muted group/menu-btn cursor-pointer",
-                        isActive && "bg-primary/5 text-primary hover:bg-primary/10"
+                        "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
+                        isActive 
+                          ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
+                          : "text-white/40 hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
                       )}
                     >
-                      <NavLink to={to} className="flex items-center gap-3 w-full h-full">
-                        <Icon className={cn("h-5 w-5 transition-colors shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover/menu-btn:text-foreground")} />
-                        <span className="font-medium truncate">{label}</span>
+                      <NavLink to={to} className="flex items-center gap-4 w-full h-full">
+                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-white/20")} />
+                        <span className="text-sm font-bold tracking-tight">{label}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10 mb-4 h-auto">Gestão</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2">
+              {managementItems.map(({ to, icon: Icon, label }) => {
+                const isActive = location.pathname === to || location.pathname.startsWith(to);
+                return (
+                  <SidebarMenuItem key={to}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className={cn(
+                        "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
+                        isActive 
+                          ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
+                          : "text-white/40 hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
+                      )}
+                    >
+                      <NavLink to={to} className="flex items-center gap-4 w-full h-full">
+                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-white/20")} />
+                        <span className="text-sm font-bold tracking-tight">{label}</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

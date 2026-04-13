@@ -265,79 +265,106 @@ const ShoppingListDetail = () => {
   if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pb-32">
+    <div className="flex flex-col gap-10 animate-fade-in pb-40 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 md:px-0 pt-4 md:pt-0">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/shopping")} className="rounded-full"><ArrowLeft className="h-5 w-5" /></Button>
-          <div className="space-y-0.5">
-            <h1 className="font-display text-xl font-bold">{list?.name}</h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{list?.status === 'concluida' ? 'Compra Finalizada' : 'Em Aberto'}</p>
+        <div className="flex items-center gap-5">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/shopping")} 
+            className="h-12 w-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/10 text-white transition-all shadow-xl"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold text-white tracking-tight">{list?.name}</h1>
+            <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">{list?.status === 'concluida' ? 'Compra Finalizada' : 'Em Aberto'}</p>
           </div>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline" size="sm" onClick={() => setIsAuditOpen(true)} className="rounded-3xl gap-2 font-black text-[10px] uppercase bg-success/10 text-success border-success/20">
-              <Calculator className="h-3 w-3" /> Conferir
+           <Button 
+             variant="outline" 
+             size="sm" 
+             onClick={() => setIsAuditOpen(true)} 
+             className="h-10 rounded-xl gap-2 font-bold text-[10px] uppercase tracking-wider bg-white/[0.03] text-white/60 border-white/[0.05] hover:bg-white/5 active:scale-95 transition-all"
+           >
+              <Calculator className="h-4 w-4" /> Conferir
            </Button>
         </div>
       </div>
 
       {/* Totals Banner */}
       <div className="grid grid-cols-2 gap-4 px-4 md:px-0">
-        <Card className="p-6 rounded-[2.5rem] bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D] text-white border border-white/[0.03] shadow-2xl">
-          <p className="text-[10px] uppercase font-black tracking-[0.2em] text-[#666666] mb-1">Total Previsto</p>
-          <p className="text-3xl font-black">R$ {estimated.toFixed(2)}</p>
+        <Card className="p-8 rounded-[2.5rem] bg-[#0C0C0E] border border-white/[0.05] shadow-2xl relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 h-24 w-24 bg-primary/5 rounded-full blur-2xl transition-all group-hover:bg-primary/10" />
+          <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20 mb-2 relative z-10">Total Previsto</p>
+          <p className="text-3xl font-bold text-white tracking-tight relative z-10">R$ {estimated.toFixed(2)}</p>
         </Card>
-        <Card className="p-6 rounded-[2.5rem] bg-[#111111] border border-white/[0.03] text-white">
-          <p className="text-[10px] uppercase font-black tracking-[0.2em] text-[#666666] mb-1">Itens Coletados</p>
-          <p className="text-3xl font-black">{items.filter(i => i.is_collected).length}<span className="text-[#333333]">/</span>{items.length}</p>
+        <Card className="p-8 rounded-[2.5rem] bg-[#0C0C0E] border border-white/[0.05] shadow-2xl relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 h-24 w-24 bg-white/5 rounded-full blur-2xl transition-all group-hover:bg-white/10" />
+          <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20 mb-2 relative z-10">Coletados</p>
+          <div className="flex items-baseline gap-1 relative z-10">
+            <p className="text-3xl font-bold text-white tracking-tight">{items.filter(i => i.is_collected).length}</p>
+            <span className="text-xl font-bold text-white/10">/</span>
+            <p className="text-xl font-bold text-white/20 tracking-tight">{items.length}</p>
+          </div>
         </Card>
       </div>
 
       {/* List Content */}
-      <div className="px-4 md:px-0 space-y-3">
+      <div className="px-4 md:px-0 space-y-4">
         {items.length === 0 ? (
-          <div className="py-20 text-center space-y-4 border-2 border-dashed rounded-[2rem] border-muted-foreground/20">
-            <Package className="h-10 w-10 mx-auto opacity-30" />
-            <p className="text-sm font-medium text-muted-foreground">O que vamos comprar hoje?</p>
+          <div className="py-24 text-center space-y-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01]">
+            <Package className="h-12 w-12 mx-auto text-white/10" />
+            <div className="space-y-1">
+              <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Lista Vazia</p>
+              <p className="text-sm font-medium text-white/20">O que vamos comprar hoje?</p>
+            </div>
           </div>
         ) : (
           items.map((item) => {
             const useWholesale = item.min_qty_wholesale > 0 && item.quantity >= item.min_qty_wholesale;
             const price = useWholesale ? item.unit_price_wholesale : item.unit_price_retail;
             return (
-              <div key={item.id} className={cn("p-4 bg-card rounded-3xl flex items-center justify-between shadow-sm border transition-all", item.is_collected ? "border-success/30 bg-success/5" : "border-border/50")}>
-                <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div key={item.id} className={cn(
+                "p-5 bg-[#0C0C0E] rounded-[2.5rem] flex items-center justify-between shadow-2xl transition-all border group", 
+                item.is_collected ? "border-primary/20 bg-[#0C0C0E]/60 shadow-none" : "border-white/[0.05]"
+              )}>
+                <div className="flex items-center gap-5 flex-1 min-w-0">
                   <button 
                     onClick={() => toggleCollected(item.id, item.is_collected)} 
-                    className={cn("h-12 w-12 rounded-2xl flex items-center justify-center transition-all active:scale-95 shrink-0", item.is_collected ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground")}
+                    className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center transition-all active:scale-95 shrink-0 shadow-xl border border-white/[0.03]", 
+                      item.is_collected ? "bg-primary text-white border-primary shadow-primary/20" : "bg-white/[0.03] text-white/20"
+                    )}
                   >
-                    {item.is_collected ? <CheckCircle className="h-6 w-6" /> : <Package className="h-6 w-6" />}
+                    {item.is_collected ? <CheckCircle className="h-7 w-7" /> : <Package className="h-7 w-7" />}
                   </button>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className={cn("font-bold text-base truncate", item.is_collected && "line-through opacity-70")}>{item.name}</p>
-                      {useWholesale && <Badge variant="success" className="h-5 text-[9px] font-black px-1.5 uppercase">ATACADO</Badge>}
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <p className={cn("font-bold text-base text-white truncate", item.is_collected && "opacity-30")}>{item.name}</p>
+                      {useWholesale && <Badge className="h-5 text-[9px] font-bold px-2 uppercase tracking-widest bg-primary/10 text-primary border-none">ATACADO</Badge>}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 bg-muted/50 rounded-lg px-2 py-0.5 shrink-0">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="hover:text-primary transition-colors"><ChevronDown className="h-4 w-4" /></button>
-                        <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="hover:text-primary transition-colors"><ChevronUp className="h-4 w-4" /></button>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] rounded-xl px-2.5 py-1 shrink-0">
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-white/20 hover:text-white transition-colors p-1"><ChevronDown className="h-4 w-4" /></button>
+                        <span className="text-xs font-bold w-7 text-center text-white">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-white/20 hover:text-white transition-colors p-1"><ChevronUp className="h-4 w-4" /></button>
                       </div>
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-tight truncate">
+                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] truncate">
                         R$ {price.toFixed(2)} {useWholesale ? '/at' : '/un'}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="text-right ml-4 flex flex-col items-end gap-1 shrink-0">
-                  <p className="font-black text-lg leading-none">R$ {(price * item.quantity).toFixed(2)}</p>
+                <div className="text-right ml-4 flex flex-col items-end gap-2 shrink-0">
+                  <p className={cn("font-bold text-xl text-white tracking-tight", item.is_collected && "opacity-30")}>R$ {(price * item.quantity).toFixed(2)}</p>
                   <button 
                     onClick={() => deleteItem(item.id)} 
-                    className="text-muted-foreground hover:text-destructive p-1 transition-colors"
+                    className="h-8 w-8 rounded-lg text-white/10 hover:text-destructive hover:bg-destructive/5 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -350,141 +377,158 @@ const ShoppingListDetail = () => {
 
       {/* Audit Modal */}
       <Dialog open={isAuditOpen} onOpenChange={setIsAuditOpen}>
-        <DialogContent className="rounded-[2.5rem] p-8 max-w-lg">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Conferência de Preços</DialogTitle></DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <DialogContent className="rounded-[2.5rem] p-10 border border-white/[0.05] bg-[#0C0C0E] text-white max-w-lg shadow-2xl">
+          <DialogHeader><DialogTitle className="text-2xl font-bold tracking-tight">Conferência</DialogTitle></DialogHeader>
+          <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar py-4">
              {items.map(item => {
                const expected = (item.quantity >= item.min_qty_wholesale && item.min_qty_wholesale > 0 ? item.unit_price_wholesale : item.unit_price_retail) * item.quantity;
                return (
-                 <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-2xl border border-border/50">
-                   <div className="text-sm font-bold">{item.name} <span className="text-muted-foreground block text-[10px] uppercase">Planejado: R$ {expected.toFixed(2)}</span></div>
-                   <div className="h-3 w-12 rounded-full bg-success/20" /> {/* Atualmente apenas visual p/ MVP */}
+                 <div key={item.id} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/[0.05]">
+                   <div className="space-y-1">
+                     <p className="text-sm font-bold text-white">{item.name}</p>
+                     <p className="text-[9px] font-bold uppercase tracking-widest text-white/20">Planejado: R$ {expected.toFixed(2)}</p>
+                   </div>
+                   <div className="h-2 w-10 rounded-full bg-primary/20" />
                  </div>
                );
              })}
           </div>
-          <Button onClick={() => { setIsAuditOpen(false); setIsFinishOpen(true); }} className="h-14 rounded-2xl font-bold bg-success text-success-foreground hover:bg-success/90">Ir para o Caixa</Button>
+          <Button onClick={() => { setIsAuditOpen(false); setIsFinishOpen(true); }} className="h-16 rounded-[1.5rem] bg-white text-black font-bold text-lg hover:bg-white/90 shadow-xl transition-all mt-4">
+            Ir para o Caixa
+          </Button>
         </DialogContent>
       </Dialog>
 
       {/* Finish Modal */}
       <Dialog open={isFinishOpen} onOpenChange={setIsFinishOpen}>
-        <DialogContent className="rounded-[2.5rem] p-8">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Finalizar Compra</DialogTitle></DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Quanto deu no caixa?</Label>
-              <Input type="number" value={finishData.total_paid} onChange={(e) => setFinishData({...finishData, total_paid: parseFloat(e.target.value)})} className="h-16 rounded-2xl bg-muted/50 border-none text-2xl font-black" />
-              <div className="flex justify-between items-center px-1">
-                 <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Estimado: R$ {estimated.toFixed(2)}</span>
-                 <Badge variant={(finishData.total_paid > estimated) ? 'destructive' : 'success'} className="font-bold">
+        <DialogContent className="rounded-[2.5rem] p-10 border border-white/[0.05] bg-[#0C0C0E] text-white max-w-lg shadow-2xl">
+          <DialogHeader><DialogTitle className="text-2xl font-bold tracking-tight">Finalizar Compra</DialogTitle></DialogHeader>
+          <div className="space-y-8 py-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Total Confirmado no Caixa</Label>
+              <div className="relative group">
+                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-white/20">R$</span>
+                <Input type="number" value={finishData.total_paid} onChange={(e) => setFinishData({...finishData, total_paid: parseFloat(e.target.value)})} className="h-24 pl-16 rounded-[1.5rem] bg-white/[0.02] border-white/[0.05] text-4xl font-bold text-white focus-visible:ring-primary/20 transition-all" />
+              </div>
+              <div className="flex justify-between items-center px-2">
+                 <span className="text-[10px] font-bold uppercase text-white/20 tracking-widest">Estimado: R$ {estimated.toFixed(2)}</span>
+                 <Badge variant={(finishData.total_paid > estimated) ? 'destructive' : 'success'} className="font-bold rounded-lg px-3 py-1 text-[10px] uppercase border-none shadow-xl">
                     {(finishData.total_paid - estimated) > 0 ? `+ R$ ${(finishData.total_paid - estimated).toFixed(2)}` : `- R$ ${Math.abs(finishData.total_paid - estimated).toFixed(2)}`}
                  </Badge>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-               <Button variant={finishData.payment_method === 'cartao' ? 'default' : 'outline'} onClick={() => setFinishData({...finishData, payment_method: 'cartao'})} className="h-14 rounded-2xl gap-2 font-bold"><CreditCard className="h-5 w-5" /> Cartão</Button>
-               <Button variant={finishData.payment_method === 'dinheiro' ? 'default' : 'outline'} onClick={() => setFinishData({...finishData, payment_method: 'dinheiro'})} className="h-14 rounded-2xl gap-2 font-bold"><Banknote className="h-5 w-5" /> Dinheiro</Button>
+            <div className="grid grid-cols-2 gap-4">
+               <button onClick={() => setFinishData({...finishData, payment_method: 'cartao'})} className={cn(
+                 "h-16 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all border",
+                 finishData.payment_method === 'cartao' ? "bg-white text-black border-white shadow-xl" : "bg-white/[0.02] border-white/[0.05] text-white/40 hover:text-white hover:bg-white/5"
+               )}>
+                 <CreditCard className="h-5 w-5" /> Cartão
+               </button>
+               <button onClick={() => setFinishData({...finishData, payment_method: 'dinheiro'})} className={cn(
+                 "h-16 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all border",
+                 finishData.payment_method === 'dinheiro' ? "bg-white text-black border-white shadow-xl" : "bg-white/[0.02] border-white/[0.05] text-white/40 hover:text-white hover:bg-white/5"
+               )}>
+                 <Banknote className="h-5 w-5" /> Dinheiro
+               </button>
             </div>
           </div>
-          <DialogFooter><Button onClick={handleFinish} className="w-full h-16 rounded-2xl text-lg font-bold shadow-xl shadow-success/20 bg-success text-success-foreground hover:bg-success/90">Lançar no Financeiro</Button></DialogFooter>
+          <DialogFooter>
+            <Button onClick={handleFinish} className="w-full h-16 rounded-[1.5rem] bg-[#22C55E] text-white text-lg font-bold shadow-2xl shadow-[#22C55E]/20 hover:bg-[#1EBC58] transition-all hover:scale-[1.01] active:scale-[0.98]">
+              Registrar no Financeiro
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Footer Actions */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-lg px-6 flex gap-3 z-40">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-lg px-6 flex gap-4 z-40">
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleScanner(e.target.files[0])} />
         
         <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
           <DialogTrigger asChild>
-            <Button className="flex-1 h-16 rounded-2xl shadow-2xl shadow-primary/40 gap-3 text-lg font-black group overflow-hidden">
+            <Button className="flex-1 h-16 rounded-[1.5rem] shadow-2xl bg-white text-black hover:bg-white/90 gap-3 text-lg font-bold transition-all hover:scale-[1.02] active:scale-[0.98] group overflow-hidden">
                {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plus className="h-6 w-6" />}
-               {isProcessing ? "Lendo..." : "Adicionar Item"}
+               {isProcessing ? "IA Lendo Etiqueta..." : "Adicionar Item"}
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-[2.5rem] p-8 max-h-[90vh] overflow-y-auto border-none shadow-2xl">
+          <DialogContent className="rounded-[2.5rem] p-10 border border-white/[0.05] bg-[#0C0C0E] text-white max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Plus className="h-6 w-6" />
-                </div>
-                O que levar?
-              </DialogTitle>
+              <DialogTitle className="text-2xl font-bold tracking-tight">O que levar?</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-6 mt-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Nome do Produto</Label>
+            <div className="space-y-8 mt-6">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Nome do Produto</Label>
                 <Input 
                   placeholder="Ex: Arroz, Leite, Pão..."
                   value={newItem.name}
                   onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                  className="h-14 rounded-2xl bg-muted/30 border-none text-lg font-bold"
+                  className="h-16 rounded-2xl bg-white/[0.02] border-white/[0.05] text-lg font-bold text-white placeholder:text-white/5 focus-visible:ring-primary/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Quantidade</Label>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Quantidade</Label>
                   <Input 
                     type="number"
                     value={newItem.quantity}
                     onChange={(e) => setNewItem({...newItem, quantity: parseFloat(e.target.value)})}
-                    className="h-14 rounded-2xl bg-muted/30 border-none font-bold"
+                    className="h-16 rounded-2xl bg-white/[0.02] border-white/[0.05] font-bold text-white"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">R$ Varejo (Un)</Label>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">R$ Varejo (Un)</Label>
                   <Input 
                     type="number"
                     value={newItem.unit_price_retail}
                     onChange={(e) => setNewItem({...newItem, unit_price_retail: parseFloat(e.target.value)})}
-                    className="h-14 rounded-2xl bg-muted/30 border-none font-bold text-success"
+                    className="h-16 rounded-2xl bg-white/[0.02] border-white/[0.05] font-bold text-[#22C55E]"
                   />
                 </div>
               </div>
 
-              <div className="p-5 bg-muted/20 rounded-3xl space-y-4 border border-border/50">
-                 <div className="flex items-center gap-2 mb-1">
-                   <AlertCircle className="h-4 w-4 text-primary" />
-                   <span className="text-[10px] font-black uppercase tracking-widest text-primary">Preço de Atacado</span>
+              <div className="p-8 bg-white/[0.01] border border-white/[0.05] rounded-[2.5rem] space-y-6">
+                 <div className="flex items-center gap-3">
+                   <div className="p-2 bg-primary/10 rounded-xl"><Tag className="h-4 w-4 text-primary" /></div>
+                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Preço de Atacado</span>
                  </div>
                  
                  <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold text-muted-foreground">Qtd Mínima</Label>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Qtd Mínima</Label>
                     <Input 
                       type="number"
                       placeholder="Ex: 3"
                       value={newItem.min_qty_wholesale}
                       onChange={(e) => setNewItem({...newItem, min_qty_wholesale: parseFloat(e.target.value)})}
-                      className="h-12 rounded-xl bg-background border-none font-bold"
+                      className="h-14 rounded-2xl bg-white/[0.02] border-white/[0.05] font-bold text-white"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold text-muted-foreground">R$ Atacado</Label>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold text-white/20 uppercase tracking-widest">R$ Atacado</Label>
                     <Input 
                       type="number"
                       placeholder="Ex: 2.50"
                       value={newItem.unit_price_wholesale}
                       onChange={(e) => setNewItem({...newItem, unit_price_wholesale: parseFloat(e.target.value)})}
-                      className="h-12 rounded-xl bg-background border-none font-bold text-primary"
+                      className="h-14 rounded-2xl bg-white/[0.02] border-white/[0.05] font-bold text-primary"
                     />
                   </div>
                 </div>
               </div>
 
-              <Button onClick={addItem} className="w-full h-16 rounded-[1.5rem] text-lg font-bold shadow-xl shadow-primary/20 gap-3">
+              <Button onClick={addItem} className="w-full h-16 rounded-[1.5rem] bg-white text-black text-lg font-bold shadow-2xl shadow-white/5 hover:bg-white/90 gap-3 transition-all active:scale-[0.98]">
                 <Save className="h-6 w-6" />
-                Adicionar à Lista
+                Salvar Item
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isProcessing} className="h-16 w-16 rounded-2xl shadow-xl bg-card border-none flex-shrink-0 group hover:scale-105 transition-all">
-          <Camera className={cn("h-8 w-8 text-primary", isProcessing && "animate-pulse")} />
+        <Button onClick={() => fileInputRef.current?.click()} disabled={isProcessing} className="h-16 w-16 rounded-[1.5rem] shadow-2xl bg-[#0C0C0E] border border-white/[0.05] flex-shrink-0 group hover:scale-105 transition-all text-white/40 hover:text-primary">
+          <Camera className={cn("h-8 w-8", isProcessing && "animate-pulse")} />
         </Button>
       </div>
     </div>

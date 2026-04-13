@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpCircle, ArrowDownCircle, Loader2 } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ interface Transaction {
 interface EditTransactionModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (deletedId?: string) => void;
   transaction: Transaction | null;
 }
 
@@ -98,11 +98,54 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
     }
   };
 
+  const handleDelete = async () => {
+    if (!transaction) return;
+    if (!window.confirm("Tem certeza que deseja excluir esta transação?")) return;
+
+    setLoading(true);
+    try {
+      console.log("Iniciando exclusão da transação:", transaction.id);
+      const { data, error, status } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', transaction.id)
+        .select();
+
+      console.log("Resposta Supabase (Delete):", { data, error, status });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error("A exclusão foi bloqueada pelo banco de dados.");
+      }
+
+      toast.success("Transação excluída com sucesso.");
+      onSuccess(transaction.id);
+      onClose();
+    } catch (err: any) {
+      console.error("Erro crítico na exclusão:", err);
+      toast.error(err.message || "Não foi possível excluir a transação.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="sm:max-w-md rounded-[32px] border-none shadow-2xl bg-background p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-2">
+        <DialogHeader className="p-6 pb-2 flex flex-row items-center justify-between">
           <DialogTitle className="text-2xl font-bold font-display">Editar Transação</DialogTitle>
+          {transaction && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors h-10 w-10"
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          )}
         </DialogHeader>
 
         <div className="p-6 space-y-5">

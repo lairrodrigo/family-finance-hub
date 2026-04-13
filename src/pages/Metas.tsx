@@ -17,27 +17,27 @@ const MetasPage = () => {
     const formattedCurrent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(goal.current_amount);
 
     return (
-      <Card className="p-6 border-none shadow-md bg-card/50 backdrop-blur-sm space-y-4">
+      <Card className="p-7 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] shadow-2xl space-y-6 transition-all hover:translate-y-[-4px] group">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5 transition-transform group-hover:scale-110">
               <Target className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">{goal.name}</h3>
-              <p className="text-xs text-muted-foreground">{goal.category || "Sem categoria"}</p>
+              <h3 className="font-bold text-white tracking-tight">{goal.name}</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/20">{goal.category || "Geral"}</p>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
+            <span className="text-sm font-bold text-primary tracking-tighter">{Math.round(progress)}%</span>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Progress value={progress} className="h-2 bg-primary/10" />
-          <div className="flex justify-between text-[11px] font-medium">
-            <span className="text-muted-foreground">{formattedCurrent}</span>
-            <span className="text-foreground">{formattedTarget}</span>
+        <div className="space-y-3">
+          <Progress value={progress} className="h-1.5 bg-white/[0.05]" />
+          <div className="flex justify-between text-[11px] font-bold uppercase tracking-tight">
+            <span className="text-white/40">{formattedCurrent}</span>
+            <span className="text-white">{formattedTarget}</span>
           </div>
         </div>
       </Card>
@@ -47,11 +47,11 @@ const MetasPage = () => {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-8 px-4 pt-4 pb-20 animate-fade-in md:pt-0">
-        <div className="animate-pulse space-y-4">
-          <div className="h-20 w-1/3 bg-muted rounded-xl" />
+        <div className="space-y-8">
+          <div className="h-12 w-48 bg-white/[0.02] rounded-2xl animate-pulse" />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 rounded-2xl bg-muted/50" />
+              <div key={i} className="h-48 rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] animate-pulse" />
             ))}
           </div>
         </div>
@@ -59,21 +59,18 @@ const MetasPage = () => {
     );
   }
 
-  // Handle Missing Table (404) or No Family
   const isTableMissing = (error as any)?.code === "PGRST116" || (error as any)?.message?.includes("not found");
   
   return (
-    <div className="flex flex-col gap-8 px-4 pt-4 pb-20 animate-fade-in md:pt-0">
+    <div className="flex flex-col gap-10 px-4 pt-4 pb-32 animate-fade-in md:pt-0">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Metas</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Gerencie seus objetivos financeiros e acompanhe seu progresso.
-          </p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-white tracking-tight">Metas</h1>
+          <p className="text-sm font-medium text-white/30"> Acompanhe seus objetivos financeiros.</p>
         </div>
         <Button 
           onClick={() => navigate("/metas/new")}
-          className="hidden md:flex h-11 items-center gap-2 rounded-xl bg-primary px-6 font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+          className="hidden md:flex h-12 items-center gap-2 rounded-2xl bg-white text-black font-bold shadow-xl shadow-white/5 hover:bg-white/90 hover:scale-[1.02] transition-all px-6"
         >
           <Plus className="h-5 w-5" />
           Nova Meta
@@ -81,13 +78,13 @@ const MetasPage = () => {
       </div>
 
       {isTableMissing ? (
-        <Card className="p-8 border-dashed border-2 bg-muted/30 flex flex-col items-center text-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
-            <Plus className="h-6 w-6" />
+        <Card className="p-10 border-dashed border-2 border-white/5 bg-white/[0.01] rounded-[2.5rem] flex flex-col items-center text-center gap-6">
+          <div className="h-16 w-16 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+            <Plus className="h-8 w-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-lg font-bold">Configuração Pendente</h2>
-            <p className="text-sm text-muted-foreground max-w-sm">
+            <h2 className="text-xl font-bold text-white">Configuração Pendente</h2>
+            <p className="text-sm text-white/30 max-w-sm font-medium">
               Para usar as metas, você precisa rodar o script de banco de dados (SQL) no seu painel do Supabase.
             </p>
           </div>
@@ -110,9 +107,9 @@ const MetasPage = () => {
       {/* Floating Action Button for mobile */}
       <Button 
         onClick={() => navigate("/metas/new")}
-        className="fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-2xl shadow-primary/40 active:scale-90 transition-transform md:hidden"
+        className="fixed bottom-24 right-6 z-50 h-16 w-16 rounded-3xl bg-white text-black shadow-2xl shadow-white/10 active:scale-90 transition-all md:hidden border-none"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-7 w-7" />
       </Button>
     </div>
   );

@@ -1,7 +1,7 @@
 {
-  "name": "Finance Family",
-  "short_name": "Finance",
-  "description": "Controle financeiro familiar",
+  "name": "Divvy Money",
+  "short_name": "Divvy",
+  "description": "Gestão financeira compartilhada",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fafafa",

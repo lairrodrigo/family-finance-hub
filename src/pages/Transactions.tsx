@@ -20,7 +20,11 @@ import {
   TrendingUp,
   Loader2,
   ListFilter,
-  ArrowLeftRight
+  ArrowLeftRight,
+  ChevronLeft,
+  Plus,
+  Trash2,
+  Edit2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { EditTransactionModal } from "@/components/EditTransactionModal";
 
 const ICON_MAP: Record<string, any> = {
   'utensils': Utensils,
@@ -64,6 +69,8 @@ const TransactionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -84,8 +91,7 @@ const TransactionsPage = () => {
           categories:category_id (name, icon, color)
         `)
         .eq("family_id", profile.family_id)
-        .order("date", { ascending: false })
-        .limit(20);
+        .order("date", { ascending: false });
 
       if (error) throw error;
 
@@ -98,7 +104,7 @@ const TransactionsPage = () => {
 
       setTransactions(formatted);
     } catch (err: any) {
-      toast.error("Erro ao carregar transações: " + err.message);
+      console.error("Transactions fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -113,79 +119,160 @@ const TransactionsPage = () => {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  const handleDeleteTransaction = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta transação?")) return;
+    
+    try {
+      console.log("Iniciando exclusão da transação (Extrato):", id);
+      const { data, error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', id)
+        .select();
+
+      console.log("Resposta Supabase (Delete Extrato):", { data, error });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error("A exclusão foi bloqueada pelo banco de dados.");
+      }
+      
+      // Opção 1 — Atualização local (Remover o item do estado atual)
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      toast.success("Transação excluída com sucesso.");
+    } catch (err: any) {
+      console.error("Erro crítico na exclusão do Extrato:", err);
+      toast.error(err.message || "Não foi possível excluir a transação.");
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pb-32">
-      <div className="flex flex-col gap-4 px-4 pt-4 md:pt-0">
+    <div className="flex flex-col gap-10 animate-fade-in pb-32 max-w-2xl mx-auto lg:mx-0">
+      <div className="flex flex-col gap-8 px-4 md:px-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="md:hidden">
-              <ArrowLeft className="h-5 w-5" />
+          <div className="flex items-center gap-5">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)} 
+              className="h-12 w-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/10 text-white transition-all shadow-xl"
+            >
+              <ChevronLeft className="h-6 w-6" />
             </Button>
-            <h1 className="font-display text-2xl font-bold">Atividades</h1>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold text-white tracking-tight">Atividades</h1>
+              <p className="text-sm font-medium text-white/20">Fluxo recente de caixa</p>
+            </div>
           </div>
-          <Button onClick={() => navigate("/add")} size="sm" className="rounded-full">
-            Registrar
+          <Button 
+            onClick={() => navigate("/add")} 
+            className="h-12 px-6 rounded-2xl bg-white text-black font-bold hover:bg-white/90 shadow-xl shadow-white/5 transition-all active:scale-95"
+          >
+            Lançar
           </Button>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="O que você procura?" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11 rounded-xl bg-card border-none shadow-sm"
+            className="pl-14 h-16 rounded-[1.5rem] bg-white/[0.02] border border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
           />
         </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary opacity-50" />
+        <div className="flex flex-col items-center justify-center py-32 gap-6">
+          <Loader2 className="h-10 w-10 animate-spin text-white/10" />
         </div>
       ) : filteredTransactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-8 text-center gap-2">
-          <ListFilter className="h-10 w-10 text-muted-foreground/30" />
-          <p className="text-sm text-muted-foreground">Nenhuma atividade recente encontrada.</p>
+        <div className="flex flex-col items-center justify-center py-32 px-10 text-center gap-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01] mx-4 md:mx-0">
+          <div className="h-24 w-24 rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-white/5">
+            <ListFilter className="h-10 w-10" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white/80">Nada por aqui</h3>
+            <p className="text-sm text-white/20 max-w-xs mx-auto font-medium">
+              Sua lista de atividades recentes está limpa.
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="grid gap-3 px-4">
+        <div className="grid gap-4 px-4 md:px-0">
           {filteredTransactions.map((t) => {
             const Icon = ICON_MAP[t.category_icon || 'ellipsis'] || Ellipsis;
             return (
-              <Card key={t.id} className="p-4 border-none bg-card shadow-sm hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-4">
+              <div 
+                key={t.id} 
+                className="p-6 rounded-[2.5rem] border border-white/[0.05] bg-[#0C0C0E] shadow-2xl transition-all hover:bg-[#121214] hover:border-white/[0.1] group relative overflow-hidden flex items-center justify-between"
+              >
+                <div className="absolute -right-10 -top-10 h-24 w-24 bg-white/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div 
+                  className="flex items-center gap-5 relative z-10 flex-1 cursor-pointer"
+                  onClick={() => {
+                    setSelectedTransaction(t);
+                    setIsEditModalOpen(true);
+                  }}
+                >
                   <div 
-                    className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${t.category_color}15`, color: t.category_color }}
+                    className="h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border border-white/[0.03] shadow-xl transition-transform group-hover:scale-105"
+                    style={{ backgroundColor: `${t.category_color}10`, color: t.category_color }}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-7 w-7" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm truncate">{t.description || t.category_name}</h4>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <h4 className="font-bold text-lg text-white truncate tracking-tight">{t.description || t.category_name}</h4>
+                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">
                       {new Date(t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {t.category_name}
                     </p>
                   </div>
                   <div className={cn(
-                    "font-bold text-sm",
-                    t.type === 'income' ? "text-success" : "text-foreground"
+                    "font-bold text-xl tracking-tight mr-4",
+                    t.type === 'income' ? "text-[#22C55E]" : "text-white"
                   )}>
                     {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                   </div>
                 </div>
-              </Card>
+
+                <div className="flex items-center gap-2 relative z-20">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-12 w-12 rounded-2xl hover:bg-red-500/10 text-white/10 hover:text-red-500 transition-colors"
+                    onClick={() => handleDeleteTransaction(t.id)}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
             );
           })}
+          
           <Button 
             variant="ghost" 
-            className="mt-4 text-xs font-bold text-primary hover:bg-primary/5 uppercase tracking-widest"
+            className="mt-8 h-14 rounded-2xl text-[10px] font-bold text-white/20 hover:text-white uppercase tracking-[0.3em] hover:bg-white/[0.02] transition-all"
             onClick={() => navigate("/history")}
           >
             Ver histórico completo
           </Button>
         </div>
       )}
+
+      <EditTransactionModal 
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={(deletedId) => {
+          if (deletedId) {
+            setTransactions(prev => prev.filter(t => t.id !== deletedId));
+          }
+          fetchTransactions();
+        }}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 };

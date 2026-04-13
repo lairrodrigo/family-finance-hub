@@ -5,7 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AppLayout from "@/components/layout/AppLayout";
+import { Loader2 } from "lucide-react";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Transactions from "./pages/Transactions";
@@ -19,6 +21,7 @@ import Shopping from "./pages/Shopping";
 import ShoppingListDetail from "./pages/ShoppingListDetail";
 import Cards from "./pages/Cards";
 import More from "./pages/More";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,15 +31,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
+        <Loader2 className="h-10 w-10 animate-spin text-white/10" />
       </div>
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
-
-  return <AppLayout>{children}</AppLayout>;
+  return (
+    <SidebarProvider>
+      <AppLayout>{children}</AppLayout>
+    </SidebarProvider>
+  );
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -44,8 +49,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
+        <Loader2 className="h-10 w-10 animate-spin text-white/10" />
       </div>
     );
   }
@@ -77,7 +82,7 @@ const App = () => (
               <Route path="/cards" element={<ProtectedRoute><Cards /></ProtectedRoute>} />
               <Route path="/family" element={<ProtectedRoute><FamilySettings /></ProtectedRoute>} />
               <Route path="/accounts" element={<ProtectedRoute><div className="p-8 text-center"><h2 className="text-xl font-bold">Contas em breve</h2></div></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><div className="p-8 text-center"><h2 className="text-xl font-bold">Configurações em breve</h2></div></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
