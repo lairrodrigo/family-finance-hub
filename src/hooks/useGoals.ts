@@ -50,11 +50,16 @@ export const useGoals = () => {
 
       const { data, error } = await supabase
         .from("goals")
-        .insert([{
-          ...newGoal,
+        .insert({
+          name: newGoal.name!,
+          target_amount: newGoal.target_amount!,
+          current_amount: newGoal.current_amount ?? 0,
+          category: newGoal.category ?? null,
+          deadline: newGoal.deadline ?? null,
+          is_completed: newGoal.is_completed ?? false,
           user_id: user.id,
           family_id: profile.family_id,
-        }])
+        })
         .select()
         .single();
 

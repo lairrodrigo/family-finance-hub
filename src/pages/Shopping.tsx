@@ -56,7 +56,7 @@ const Shopping = () => {
       setIsNewListOpen(false);
       setNewListName("");
       setNewListStore("");
-      navigate(`/shopping/${data.id}`);
+      navigate(`/shopping/${(data as any).id}`);
     } catch (err: any) {
       toast.error("Erro ao criar lista");
     }

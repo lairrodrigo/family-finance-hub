@@ -117,7 +117,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
         return;
       }
 
-      const { error } = await supabase.from("transactions").insert([{
+      const { error } = await supabase.from("transactions" as any).insert([{
         family_id: profile.family_id,
         user_id: user?.id,
         amount: parsedAmount,
