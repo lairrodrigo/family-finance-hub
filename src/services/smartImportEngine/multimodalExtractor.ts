@@ -24,7 +24,7 @@ export const extractMultimodal = async (
         const expense = parseTextToExpense(text, 'image');
         return { expenses: [expense] };
       } catch (innerErr) {
-        return { expenses: [{ valor: 0, data: new Date().toISOString().split('T')[0], descricao: `Anexo de Imagem (${file.name})`, categoria: 'Outros', origem: 'image' }] };
+        return { expenses: [{ valor: 0, data: new Date().toISOString().split('T')[0], descricao: `Anexo de Imagem (${file.name})`, categoria: 'Outros', origem: 'imagem' }] };
       }
     }
 

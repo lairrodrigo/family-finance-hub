@@ -412,7 +412,7 @@ const ShoppingListDetail = () => {
               </div>
               <div className="flex justify-between items-center px-2">
                  <span className="text-[10px] font-bold uppercase text-white/20 tracking-widest">Estimado: R$ {estimated.toFixed(2)}</span>
-                 <Badge variant={(finishData.total_paid > estimated) ? 'destructive' : 'success'} className="font-bold rounded-lg px-3 py-1 text-[10px] uppercase border-none shadow-xl">
+                 <Badge variant={(finishData.total_paid > estimated) ? 'destructive' : 'default'} className="font-bold rounded-lg px-3 py-1 text-[10px] uppercase border-none shadow-xl">
                     {(finishData.total_paid - estimated) > 0 ? `+ R$ ${(finishData.total_paid - estimated).toFixed(2)}` : `- R$ ${Math.abs(finishData.total_paid - estimated).toFixed(2)}`}
                  </Badge>
               </div>
