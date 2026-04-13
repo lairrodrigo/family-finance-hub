@@ -81,7 +81,6 @@ const App = () => (
               <Route path="/shopping/:id" element={<ProtectedRoute><ShoppingListDetail /></ProtectedRoute>} />
               <Route path="/cards" element={<ProtectedRoute><Cards /></ProtectedRoute>} />
               <Route path="/family" element={<ProtectedRoute><FamilySettings /></ProtectedRoute>} />
-              <Route path="/accounts" element={<ProtectedRoute><div className="p-8 text-center"><h2 className="text-xl font-bold">Contas em breve</h2></div></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />

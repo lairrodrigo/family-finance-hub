@@ -103,7 +103,7 @@ const Cards = () => {
   };
 
   return (
-    <div className="flex flex-col gap-10 px-4 pt-4 pb-32 animate-fade-in md:pt-0 max-w-2xl mx-auto lg:mx-0">
+    <div className="flex flex-col gap-10 pb-8 animate-fade-in max-w-2xl mx-auto lg:mx-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Button 

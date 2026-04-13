@@ -194,8 +194,8 @@ const FamilySettings = () => {
   }
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-32">
-      <div className="flex items-center gap-5 px-4 md:px-0">
+    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-8">
+      <div className="flex items-center gap-5">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -211,7 +211,7 @@ const FamilySettings = () => {
       </div>
 
       {!family ? (
-        <Card className="p-10 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] flex flex-col items-center text-center gap-8 shadow-2xl mx-4 md:mx-0">
+        <Card className="p-10 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] flex flex-col items-center text-center gap-8 shadow-2xl">
           <div className="h-20 w-20 rounded-[2rem] bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xl">
             <Users className="h-10 w-10" />
           </div>
@@ -237,7 +237,7 @@ const FamilySettings = () => {
           </form>
         </Card>
       ) : (
-        <div className="space-y-8 px-4 md:px-0">
+        <div className="space-y-8">
           <Card className="p-8 md:p-10 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] shadow-2xl">
             <div className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-5 overflow-hidden">

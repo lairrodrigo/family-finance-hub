@@ -203,8 +203,8 @@ const HistoryPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in pb-32">
-      <div className="flex flex-col gap-8 px-4 pt-4 md:pt-0">
+    <div className="flex flex-col gap-8 animate-fade-in pb-8">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="md:hidden -ml-2">
@@ -248,7 +248,7 @@ const HistoryPage = () => {
           </TabsList>
 
           <TabsContent value="visualize" className="mt-0">
-            <div className="flex flex-col md:flex-row gap-4 items-center mb-8 px-4 md:px-0">
+            <div className="flex flex-col md:flex-row gap-4 items-center mb-8">
               <div className="flex items-center p-1 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit">
                 <button 
                   onClick={() => setSelectedView('monthly')}
@@ -296,7 +296,7 @@ const HistoryPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-8 px-4 md:px-0">
+            <div className="flex flex-col gap-8">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                   <Loader2 className="h-10 w-10 animate-spin text-primary opacity-30" />
@@ -376,7 +376,7 @@ const HistoryPage = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="manage" className="mt-0 px-4 md:px-0">
+          <TabsContent value="manage" className="mt-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <Loader2 className="h-10 w-10 animate-spin text-primary opacity-30" />

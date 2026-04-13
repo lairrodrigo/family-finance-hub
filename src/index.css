@@ -97,18 +97,17 @@
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Mobile-first touch targets */
-  button, a, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+    overflow-x: hidden;
   }
 }
 

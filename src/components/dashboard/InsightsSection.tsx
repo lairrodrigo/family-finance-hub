@@ -40,9 +40,9 @@ export const InsightsSection = ({ transactions, categories, isLoading }: Insight
             <Brain className="h-7 w-7 text-white/10" />
           </div>
           <div className="space-y-1.5 pt-1">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.25em]">Aguardando Dados</p>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.25em]">Em breve</p>
             <p className="text-sm text-white/20 leading-relaxed font-medium">
-              Adicione pelo menos 3 transações para que a IA possa analisar seu perfil financeiro.
+              Seus insights financeiros aparecerão aqui conforme você registrar transações.
             </p>
           </div>
         </div>

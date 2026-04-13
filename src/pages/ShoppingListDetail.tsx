@@ -267,7 +267,7 @@ const ShoppingListDetail = () => {
   return (
     <div className="flex flex-col gap-10 animate-fade-in pb-40 max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-0 pt-4 md:pt-0">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Button 
             variant="ghost" 
@@ -295,7 +295,7 @@ const ShoppingListDetail = () => {
       </div>
 
       {/* Totals Banner */}
-      <div className="grid grid-cols-2 gap-4 px-4 md:px-0">
+      <div className="grid grid-cols-2 gap-4">
         <Card className="p-8 rounded-[2.5rem] bg-[#0C0C0E] border border-white/[0.05] shadow-2xl relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 h-24 w-24 bg-primary/5 rounded-full blur-2xl transition-all group-hover:bg-primary/10" />
           <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/20 mb-2 relative z-10">Total Previsto</p>
@@ -313,7 +313,7 @@ const ShoppingListDetail = () => {
       </div>
 
       {/* List Content */}
-      <div className="px-4 md:px-0 space-y-4">
+      <div className="space-y-4">
         {items.length === 0 ? (
           <div className="py-24 text-center space-y-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01]">
             <Package className="h-12 w-12 mx-auto text-white/10" />

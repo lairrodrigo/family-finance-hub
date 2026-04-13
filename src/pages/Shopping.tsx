@@ -91,13 +91,13 @@ const Shopping = () => {
   );
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in pb-32">
-      <div className="flex flex-col gap-1 px-4 md:px-0 pt-4 md:pt-0">
+    <div className="flex flex-col gap-10 animate-fade-in pb-8">
+      <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight text-white">Compras</h1>
         <p className="text-sm font-medium text-white/20">Economize e controle sua dispensa</p>
       </div>
 
-      <div className="flex items-center gap-4 px-4 md:px-0">
+      <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/10" />
           <Input 
@@ -113,7 +113,7 @@ const Shopping = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-4 md:px-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
           Array(6).fill(0).map((_, i) => (
             <div key={i} className="h-44 rounded-3xl bg-muted animate-pulse" />

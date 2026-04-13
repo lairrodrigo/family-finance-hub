@@ -1,13 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, CreditCard, Wallet, Settings, ChevronRight, ShoppingBag } from "lucide-react";
+import { LogOut, Users, CreditCard, Settings, ChevronRight } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
   { icon: Users, label: "Família", description: "Membros e permissões", to: "/family" },
   { icon: CreditCard, label: "Cartões", description: "Meus cartões registrados", to: "/cards" },
-  { icon: Wallet, label: "Contas", description: "Contas e saldos", to: "/accounts" },
   { icon: Settings, label: "Ajustes", description: "Configurações do aplicativo", to: "/settings" },
 ];
 
@@ -16,7 +15,7 @@ const MorePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="px-4 pt-12 animate-fade-in pb-40 max-w-2xl mx-auto lg:pt-0">
+    <div className="animate-fade-in pb-8 max-w-2xl mx-auto">
       <div className="flex flex-col gap-1 mb-10">
         <h1 className="text-3xl font-bold text-white tracking-tight">Mais</h1>
         <p className="text-sm font-medium text-white/20 truncate">{user?.email}</p>

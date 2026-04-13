@@ -178,7 +178,7 @@ const SettingsPage = () => {
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
 
   return (
-    <div className="flex flex-col gap-10 max-w-2xl mx-auto pb-32 animate-fade-in">
+    <div className="flex flex-col gap-10 max-w-2xl mx-auto pb-8 animate-fade-in">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-white tracking-tight">Configurações</h1>

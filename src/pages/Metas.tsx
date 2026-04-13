@@ -46,7 +46,7 @@ const MetasPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 px-4 pt-4 pb-20 animate-fade-in md:pt-0">
+      <div className="flex flex-col gap-8 animate-fade-in">
         <div className="space-y-8">
           <div className="h-12 w-48 bg-white/[0.02] rounded-2xl animate-pulse" />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -62,7 +62,7 @@ const MetasPage = () => {
   const isTableMissing = (error as any)?.code === "PGRST116" || (error as any)?.message?.includes("not found");
   
   return (
-    <div className="flex flex-col gap-10 px-4 pt-4 pb-32 animate-fade-in md:pt-0">
+    <div className="flex flex-col gap-10 pb-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-white tracking-tight">Metas</h1>

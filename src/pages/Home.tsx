@@ -124,7 +124,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-32 lg:pb-8 animate-fade-in">
+    <div className="flex flex-col gap-8 pb-8 animate-fade-in">
       <DashboardHeader />
       
       {/* Dual Experience Layout Engine */}

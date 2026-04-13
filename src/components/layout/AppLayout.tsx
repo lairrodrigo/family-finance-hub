@@ -17,16 +17,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen w-full bg-[#050505]">
+    <div className="flex min-h-screen w-full bg-[#050505] overflow-x-hidden">
       {/* Desktop Navigation - Primary Sidebar (Hidden on Mobile) */}
       <div className="hidden lg:block">
         <AppSidebar />
       </div>
 
-      <SidebarInset className="flex flex-col bg-transparent w-full">
-        <main className="flex-1 w-full max-w-[1600px] mx-auto overflow-x-hidden pt-4 lg:pt-8 px-4 pb-24 lg:pb-8">
-          {children}
-        </main>
+      <SidebarInset className="flex flex-col bg-transparent w-full min-w-0">
+        <div className="flex-1 w-full overflow-x-hidden">
+          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-8 pb-28 lg:pb-8">
+            {children}
+          </div>
+        </div>
 
         {/* Mobile Navigation - Fintech Premium Style (Hidden on Desktop) */}
         <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden border-t border-white/[0.05] bg-[#0A0A0A]/90 backdrop-blur-2xl safe-bottom transition-all pointer-events-auto">

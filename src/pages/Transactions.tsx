@@ -148,8 +148,8 @@ const TransactionsPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in pb-32 max-w-2xl mx-auto lg:mx-0">
-      <div className="flex flex-col gap-8 px-4 md:px-0">
+    <div className="flex flex-col gap-10 animate-fade-in pb-8 max-w-2xl mx-auto lg:mx-0">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <Button 
@@ -189,7 +189,7 @@ const TransactionsPage = () => {
           <Loader2 className="h-10 w-10 animate-spin text-white/10" />
         </div>
       ) : filteredTransactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 px-10 text-center gap-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01] mx-4 md:mx-0">
+        <div className="flex flex-col items-center justify-center py-32 px-10 text-center gap-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01]">
           <div className="h-24 w-24 rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-white/5">
             <ListFilter className="h-10 w-10" />
           </div>
@@ -201,7 +201,7 @@ const TransactionsPage = () => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 px-4 md:px-0">
+        <div className="grid gap-4">
           {filteredTransactions.map((t) => {
             const Icon = ICON_MAP[t.category_icon || 'ellipsis'] || Ellipsis;
             return (

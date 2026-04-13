@@ -73,9 +73,9 @@ const CreateGoal = () => {
   };
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-32">
+    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-8">
       {/* Header with Back Button */}
-      <div className="flex items-center gap-5 px-4 md:px-0">
+      <div className="flex items-center gap-5">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -90,7 +90,7 @@ const CreateGoal = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 px-4 md:px-0">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <Card className="p-8 md:p-10 space-y-10 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] shadow-2xl">
           {/* Goal Name */}
           <div className="space-y-4">

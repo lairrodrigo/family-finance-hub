@@ -52,6 +52,7 @@ const AddTransactionPage = () => {
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [errors, setErrors] = useState<{ amount?: string; category?: string }>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,12 +73,23 @@ const AddTransactionPage = () => {
         return;
       }
 
-      const { data: cats } = await supabase
+      const { data: cats, error: catsError } = await supabase
         .from("categories")
         .select("*")
         .or(`family_id.eq.${familyId},is_default.eq.true`)
         .eq("type", type);
-      setCategories(cats || []);
+      
+      if (catsError) {
+        console.error("Erro ao buscar categorias:", catsError);
+      }
+      
+      const loadedCats = cats || [];
+      setCategories(loadedCats);
+      
+      // Reset categoryId if current selection is not in the new list
+      if (categoryId && loadedCats.length > 0 && !loadedCats.find(c => c.id === categoryId)) {
+        setCategoryId("");
+      }
 
       const { data: accs } = await supabase
         .from("accounts")
@@ -85,7 +97,7 @@ const AddTransactionPage = () => {
         .eq("family_id", familyId);
       setAccounts(accs || []);
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao buscar dados:", err);
     }
   };
 
@@ -104,18 +116,29 @@ const AddTransactionPage = () => {
       const result = await SmartImportEngine.processFile(file, undefined, transcript, audioUrl);
       if (result.expenses.length > 0) {
         const exp = result.expenses[0];
-        setAmount(exp.valor > 0 ? exp.valor.toString() : amount);
+        
+        // Set amount as string, preserving the number
+        if (exp.valor > 0) {
+          setAmount(exp.valor.toFixed(2).replace(".", ","));
+        }
         if (exp.descricao) setDescription(exp.descricao);
-        setDate(exp.data);
+        if (exp.data) setDate(exp.data);
         setLastSmartData(result.expenses);
 
-        // Auto-select category
-        const bestCat = categories.find(c => c.name.toLowerCase().includes(exp.categoria.toLowerCase()));
-        if (bestCat) setCategoryId(bestCat.id);
+        // Auto-select category - try exact match first, then partial
+        if (exp.categoria) {
+          const exactCat = categories.find(c => c.name.toLowerCase() === exp.categoria.toLowerCase());
+          const partialCat = categories.find(c => c.name.toLowerCase().includes(exp.categoria.toLowerCase()) || exp.categoria.toLowerCase().includes(c.name.toLowerCase()));
+          const bestCat = exactCat || partialCat;
+          if (bestCat) {
+            setCategoryId(bestCat.id);
+          }
+        }
         
         toast.info("Dados preenchidos via " + (stype === 'audio' ? "voz" : "extração local"));
       }
     } catch (err: any) {
+      console.error("Erro no processamento:", err);
       toast.error("Erro no processamento local");
     } finally {
       setIsProcessing(false);
@@ -129,23 +152,63 @@ const AddTransactionPage = () => {
     }
   };
 
+  const parseAmount = (val: string): number => {
+    if (!val || val.trim() === "") return NaN;
+    // Handle Brazilian format: 5.417,12 -> 5417.12
+    // If has comma, treat dots as thousands separator and comma as decimal
+    if (val.includes(",")) {
+      const normalized = val.replace(/\./g, "").replace(",", ".");
+      return parseFloat(normalized);
+    }
+    // Otherwise parse directly (user using dot as decimal)
+    return parseFloat(val.replace(/[^0-9.]/g, ""));
+  };
+
+  const handleAmountChange = (val: string) => {
+    // Allow digits, commas and dots for Brazilian number formatting
+    const cleaned = val.replace(/[^0-9.,]/g, "");
+    setAmount(cleaned);
+    if (errors.amount) setErrors(prev => ({ ...prev, amount: undefined }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !categoryId) {
-      toast.error("Por favor, preencha o valor e a categoria.");
+    
+    const parsedAmount = parseAmount(amount);
+    
+    const newErrors: { amount?: string; category?: string } = {};
+    
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      newErrors.amount = "Informe um valor numérico válido";
+    }
+    
+    if (!categoryId || categoryId.trim() === "") {
+      newErrors.category = "Selecione uma categoria";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+    
+    setErrors({});
 
     setLoading(true);
     try {
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
       
+      if (!profile?.family_id) {
+        toast.error("Família não encontrada. Configure seu perfil primeiro.");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.from("transactions").insert([{
-        family_id: profile?.family_id,
+        family_id: profile.family_id,
         user_id: user?.id,
-        amount: parseFloat(amount.replace(",", ".")),
+        amount: parsedAmount,
         type,
-        description,
+        description: description || "",
         category_id: categoryId,
         account_id: accountId || null,
         date
@@ -168,21 +231,16 @@ const AddTransactionPage = () => {
       toast.success("Transação registrada!");
       navigate("/");
     } catch (err: any) {
+      console.error("Erro ao salvar transação:", err);
       toast.error("Erro ao salvar: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAmountChange = (val: string) => {
-    // Only allow numbers and one comma/dot
-    const cleaned = val.replace(/[^0-9.,]/g, "").replace(",", ".");
-    setAmount(cleaned);
-  };
-
   return (
-    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-32">
-      <div className="flex items-center gap-5 px-4 md:px-0 pt-4 md:pt-0">
+    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-8">
+      <div className="flex items-center gap-5">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -197,7 +255,7 @@ const AddTransactionPage = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="px-4 md:px-0 space-y-10">
+      <form onSubmit={handleSubmit} className="space-y-10">
         {/* Amount Section */}
         <div className="p-10 bg-[#0C0C0E] border border-white/[0.05] rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
           <div className="absolute -right-10 -top-10 h-32 w-32 bg-primary/5 rounded-full blur-3xl transition-all group-focus-within:bg-primary/10" />
@@ -216,10 +274,14 @@ const AddTransactionPage = () => {
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                className="bg-transparent text-6xl font-bold text-center w-full focus:outline-none placeholder:text-white/5 px-10 transition-all text-white tracking-tight"
+                className={cn(
+                  "bg-transparent text-6xl font-bold text-center w-full focus:outline-none placeholder:text-white/5 px-10 transition-all text-white tracking-tight",
+                  errors.amount && "text-red-400"
+                )}
                 autoFocus
               />
             </div>
+            {errors.amount && <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider">{errors.amount}</p>}
           </div>
         </div>
 
@@ -314,18 +376,28 @@ const AddTransactionPage = () => {
               <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Categoria</Label>
               <div className="relative group">
                 <LayoutGrid className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors z-10" />
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="pl-14 h-16 rounded-2xl bg-white/[0.02] border-white/[0.05] text-white font-bold focus-visible:ring-primary/20">
+                <Select value={categoryId} onValueChange={(val) => { setCategoryId(val); if (errors.category) setErrors(prev => ({ ...prev, category: undefined })); }}>
+                  <SelectTrigger className={cn(
+                    "pl-14 h-16 rounded-2xl bg-white/[0.02] text-white font-bold focus-visible:ring-primary/20",
+                    errors.category ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]"
+                  )}>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl bg-[#0C0C0E] border-white/[0.05] text-white font-bold">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id} className="rounded-xl my-1 focus:bg-white/5 transition-colors">
-                        {cat.name}
-                      </SelectItem>
-                    ))}
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="rounded-xl my-1 focus:bg-white/5 transition-colors">
+                          {cat.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-xs text-white/30 font-medium">Nenhuma categoria encontrada</p>
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
+                {errors.category && <p className="text-[10px] font-bold text-red-400 mt-2 ml-1 uppercase tracking-wider">{errors.category}</p>}
               </div>
             </div>
 

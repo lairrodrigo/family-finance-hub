@@ -6,8 +6,8 @@ const BudgetsPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-32">
-      <div className="flex items-center gap-5 px-4 md:px-0 pt-4 md:pt-0">
+    <div className="flex flex-col gap-10 animate-fade-in max-w-2xl mx-auto pb-8">
+      <div className="flex items-center gap-5">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -22,7 +22,7 @@ const BudgetsPage = () => {
         </div>
       </div>
 
-      <div className="px-4 md:px-0">
+      <div>
         <div className="py-32 text-center space-y-8 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01] relative overflow-hidden group">
           <div className="absolute -right-20 -top-20 h-40 w-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all" />
           
