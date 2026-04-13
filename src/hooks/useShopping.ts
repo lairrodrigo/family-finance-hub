@@ -7,7 +7,7 @@ export const useShopping = () => {
 
   const getShoppingLists = useCallback(async () => {
     const { data, error } = await supabase
-      .from('shopping_lists')
+      .from('shopping_lists' as any)
       .select('*')
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -16,8 +16,8 @@ export const useShopping = () => {
 
   const createShoppingList = async (name: string, store?: string, family_id?: string, user_id?: string) => {
     const { data, error } = await supabase
-      .from('shopping_lists')
-      .insert([{ name, store, family_id, user_id }])
+      .from('shopping_lists' as any)
+      .insert([{ name, store, family_id, user_id }] as any)
       .select()
       .single();
     if (error) throw error;
@@ -25,32 +25,29 @@ export const useShopping = () => {
   };
 
   const deleteShoppingList = async (id: string) => {
-    const { error } = await supabase.from('shopping_lists').delete().eq('id', id);
+    const { error } = await (supabase.from('shopping_lists' as any) as any).delete().eq('id', id);
     if (error) throw error;
   };
 
   const updateShoppingList = async (id: string, updates: any) => {
-    const { error } = await supabase.from('shopping_lists').update(updates).eq('id', id);
+    const { error } = await (supabase.from('shopping_lists' as any) as any).update(updates).eq('id', id);
     if (error) throw error;
   };
 
   const duplicateShoppingList = async (id: string, user_id: string, family_id: string) => {
-    // 1. Get original list and items
-    const { data: listData } = await supabase.from('shopping_lists').select('*').eq('id', id).single();
-    const { data: itemsData } = await supabase.from('shopping_list_items').select('*').eq('list_id', id);
+    const { data: listData } = await supabase.from('shopping_lists' as any).select('*').eq('id', id).single();
+    const { data: itemsData } = await supabase.from('shopping_list_items' as any).select('*').eq('list_id', id) as any;
 
-    // 2. Create new list
-    const { data: newList } = await supabase.from('shopping_lists').insert([{
-      name: `${listData.name} (Cópia)`,
-      store: listData.store,
+    const { data: newList } = await supabase.from('shopping_lists' as any).insert([{
+      name: `${(listData as any).name} (Cópia)`,
+      store: (listData as any).store,
       family_id,
       user_id
-    }]).select().single();
+    }] as any).select().single();
 
-    // 3. Duplicate items
     if (itemsData && itemsData.length > 0) {
-      const newItems = itemsData.map(item => ({
-        list_id: newList.id,
+      const newItems = itemsData.map((item: any) => ({
+        list_id: (newList as any).id,
         name: item.name,
         quantity: item.quantity,
         unit_price_retail: item.unit_price_retail,
@@ -58,7 +55,7 @@ export const useShopping = () => {
         min_qty_wholesale: item.min_qty_wholesale,
         price_type: item.price_type
       }));
-      await supabase.from('shopping_list_items').insert(newItems);
+      await supabase.from('shopping_list_items' as any).insert(newItems as any);
     }
 
     return newList;
