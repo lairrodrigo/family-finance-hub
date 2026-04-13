@@ -64,6 +64,38 @@ export type Database = {
           },
         ]
       }
+      ai_insights: {
+        Row: {
+          content: Json
+          created_at: string
+          family_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          family_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          family_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           brand: string | null
@@ -185,10 +217,97 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_amount: number
+          deadline: string | null
+          family_id: string
+          id: string
+          is_completed: boolean
+          name: string
+          target_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          family_id: string
+          id?: string
+          is_completed?: boolean
+          name: string
+          target_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          family_id?: string
+          id?: string
+          is_completed?: boolean
+          name?: string
+          target_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      history_entries: {
+        Row: {
+          createdAt: string
+          fileName: string
+          fileUrl: string | null
+          id: string
+          processedContent: string
+          systemResponse: string
+          type: string
+          user_id: string
+          userMessage: string
+        }
+        Insert: {
+          createdAt?: string
+          fileName: string
+          fileUrl?: string | null
+          id?: string
+          processedContent: string
+          systemResponse: string
+          type: string
+          user_id: string
+          userMessage: string
+        }
+        Update: {
+          createdAt?: string
+          fileName?: string
+          fileUrl?: string | null
+          id?: string
+          processedContent?: string
+          systemResponse?: string
+          type?: string
+          user_id?: string
+          userMessage?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string | null
           family_id: string | null
           full_name: string | null
           id: string
@@ -198,6 +317,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           family_id?: string | null
           full_name?: string | null
           id?: string
@@ -207,6 +327,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           family_id?: string | null
           full_name?: string | null
           id?: string
@@ -216,6 +337,112 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_list_items: {
+        Row: {
+          actual_price_paid: number | null
+          created_at: string | null
+          id: string
+          is_collected: boolean | null
+          list_id: string
+          min_qty_wholesale: number | null
+          name: string
+          photo_url: string | null
+          price_type: string | null
+          quantity: number | null
+          tag_photo_url: string | null
+          unit_price_retail: number | null
+          unit_price_wholesale: number | null
+        }
+        Insert: {
+          actual_price_paid?: number | null
+          created_at?: string | null
+          id?: string
+          is_collected?: boolean | null
+          list_id: string
+          min_qty_wholesale?: number | null
+          name: string
+          photo_url?: string | null
+          price_type?: string | null
+          quantity?: number | null
+          tag_photo_url?: string | null
+          unit_price_retail?: number | null
+          unit_price_wholesale?: number | null
+        }
+        Update: {
+          actual_price_paid?: number | null
+          created_at?: string | null
+          id?: string
+          is_collected?: boolean | null
+          list_id?: string
+          min_qty_wholesale?: number | null
+          name?: string
+          photo_url?: string | null
+          price_type?: string | null
+          quantity?: number | null
+          tag_photo_url?: string | null
+          unit_price_retail?: number | null
+          unit_price_wholesale?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          family_id: string
+          id: string
+          name: string
+          status: string | null
+          store: string | null
+          total_estimated: number | null
+          total_paid: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          family_id: string
+          id?: string
+          name: string
+          status?: string | null
+          store?: string | null
+          total_estimated?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          family_id?: string
+          id?: string
+          name?: string
+          status?: string | null
+          store?: string | null
+          total_estimated?: number | null
+          total_paid?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_lists_family_id_fkey"
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
@@ -248,6 +475,67 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category_id: string | null
+          created_at: string
+          date: string
+          description: string | null
+          family_id: string
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          family_id: string
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          family_id?: string
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
             referencedColumns: ["id"]
           },
         ]
@@ -289,6 +577,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_family_member: {
+        Args: {
+          p_family_id: string
+          p_role?: Database["public"]["Enums"]["app_role"]
+          p_user_email: string
+        }
+        Returns: Json
+      }
+      get_financial_insights: { Args: never; Returns: Json }
       get_user_family_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
