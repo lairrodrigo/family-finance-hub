@@ -74,8 +74,8 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('transactions')
+      const { error } = await (supabase
+        .from('transactions' as any) as any)
         .update({
           description,
           amount: parseFloat(amount),
@@ -105,8 +105,8 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
     setLoading(true);
     try {
       console.log("Iniciando exclusão da transação:", transaction.id);
-      const { data, error, status } = await supabase
-        .from('transactions')
+      const { data, error, status } = await (supabase
+        .from('transactions' as any) as any)
         .delete()
         .eq('id', transaction.id)
         .select();
