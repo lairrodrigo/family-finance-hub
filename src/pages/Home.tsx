@@ -72,15 +72,19 @@ const HomePage = () => {
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user.id).single();
       if (!profile?.family_id) return;
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cards")
         .select("*")
         .eq("family_id", profile.family_id)
         .order("created_at", { ascending: false });
 
-      if (data) setCards(data);
+      if (error) {
+        console.error("Error fetching cards:", error);
+      } else if (data) {
+        setCards(data);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Critical error in fetchCards:", err);
     }
   };
 
@@ -91,27 +95,33 @@ const HomePage = () => {
       if (!profile?.family_id) return;
 
       // Buscar Transações (mais colunas para a IA)
-      const { data: txs } = await supabase
+      const { data: txs, error: txsError } = await supabase
         .from("transactions")
         .select("amount, type, category_id, date")
         .eq("family_id", profile.family_id)
         .order("date", { ascending: false });
 
-      // Buscar Categorias para nomes
-      const { data: cats } = await supabase
-        .from("categories")
-        .select("id, name");
-
-      if (txs) {
+      if (txsError) {
+        console.error("Error fetching transactions:", txsError);
+      } else if (txs) {
         setFullTransactions(txs);
         const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
         const expense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
         setTotals({ income, expense });
       }
 
-      if (cats) setCategories(cats);
+      // Buscar Categorias para nomes
+      const { data: cats, error: catsError } = await supabase
+        .from("categories")
+        .select("id, name");
+
+      if (catsError) {
+        console.error("Error fetching categories:", catsError);
+      } else if (cats) {
+        setCategories(cats);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Critical error in fetchDashboardData:", err);
     } finally {
       setLoading(false);
     }

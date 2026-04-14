@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Loader2 } from "lucide-react";
 import Auth from "./pages/Auth";
@@ -26,16 +27,42 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function LoadingScreen() {
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowPrompt(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center">
+      <Loader2 className="h-10 w-10 animate-spin text-primary mb-6" />
+      {showPrompt && (
+        <div className="space-y-4 animate-in fade-in zoom-in duration-500">
+          <p className="text-white/40 text-sm max-w-xs font-medium leading-relaxed">
+            A conexão está demorando mais que o esperado. Verifique sua internet ou as configurações do projeto.
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
-        <Loader2 className="h-10 w-10 animate-spin text-white/10" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
+
+  if (!user) return <Navigate to="/auth" replace />;
 
   return (
     <SidebarProvider>
@@ -48,11 +75,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
-        <Loader2 className="h-10 w-10 animate-spin text-white/10" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (user) return <Navigate to="/" replace />;

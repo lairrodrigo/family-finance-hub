@@ -21,21 +21,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timeout to prevent infinite loading if Supabase hangs
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn("Auth initialization safety timeout reached. Forcing loading = false.");
+        setLoading(false);
+      }
+    }, 10000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        // Use setTimeout to avoid deadlock in some SDK versions
+        setTimeout(() => {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          clearTimeout(safetyTimeout);
+        }, 0);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session) {
+        setLoading(false);
+        clearTimeout(safetyTimeout);
+      }
+    }).catch(err => {
+      console.error("Critical error getting session:", err);
       setLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
