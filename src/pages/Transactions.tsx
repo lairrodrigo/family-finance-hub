@@ -120,30 +120,27 @@ const TransactionsPage = () => {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir esta transação?")) return;
+    if (!window.confirm("Tem certeza que deseja excluir esta transaÃ§Ã£o?")) return;
     
     try {
-      console.log("Iniciando exclusão da transação (Extrato):", id);
       const { data, error } = await supabase
         .from('transactions')
         .delete()
         .eq('id', id)
         .select();
 
-      console.log("Resposta Supabase (Delete Extrato):", { data, error });
-
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        throw new Error("A exclusão foi bloqueada pelo banco de dados.");
+        throw new Error("Acesso negado: VocÃª nÃ£o possui permissÃ£o para esta aÃ§Ã£o.");
       }
       
-      // Opção 1 — Atualização local (Remover o item do estado atual)
+      // OpÃ§Ã£o 1 â€” AtualizaÃ§Ã£o local (Remover o item do estado atual)
       setTransactions(prev => prev.filter(t => t.id !== id));
-      toast.success("Transação excluída com sucesso.");
+      toast.success("TransaÃ§Ã£o excluÃ­da com sucesso.");
     } catch (err: any) {
-      console.error("Erro crítico na exclusão do Extrato:", err);
-      toast.error(err.message || "Não foi possível excluir a transação.");
+      console.error("Erro crÃ­tico na exclusÃ£o do Extrato:", err);
+      toast.error(err.message || "NÃ£o foi possÃ­vel excluir a transaÃ§Ã£o.");
     }
   };
 
@@ -162,21 +159,21 @@ const TransactionsPage = () => {
             </Button>
             <div className="space-y-1">
               <h1 className="text-3xl font-bold text-white tracking-tight">Atividades</h1>
-              <p className="text-sm font-medium text-white/20">Fluxo recente de caixa</p>
+              <p className="text-sm font-medium text-muted-foreground">Fluxo recente de caixa</p>
             </div>
           </div>
           <Button 
             onClick={() => navigate("/add")} 
             className="h-12 px-6 rounded-2xl bg-white text-black font-bold hover:bg-white/90 shadow-xl shadow-white/5 transition-all active:scale-95"
           >
-            Lançar
+            LanÃ§ar
           </Button>
         </div>
 
         <div className="relative group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="O que você procura?" 
+            placeholder="O que vocÃª procura?" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-14 h-16 rounded-[1.5rem] bg-white/[0.02] border border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
@@ -186,7 +183,7 @@ const TransactionsPage = () => {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
-          <Loader2 className="h-10 w-10 animate-spin text-white/10" />
+          <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
         </div>
       ) : filteredTransactions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 px-10 text-center gap-6 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/[0.01]">
@@ -195,8 +192,8 @@ const TransactionsPage = () => {
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-white/80">Nada por aqui</h3>
-            <p className="text-sm text-white/20 max-w-xs mx-auto font-medium">
-              Sua lista de atividades recentes está limpa.
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto font-medium">
+              Sua lista de atividades recentes estÃ¡ limpa.
             </p>
           </div>
         </div>
@@ -226,8 +223,8 @@ const TransactionsPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-lg text-white truncate tracking-tight">{t.description || t.category_name}</h4>
-                    <p className="text-[10px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">
-                      {new Date(t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {t.category_name}
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-0.5">
+                      {new Date(t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} â€¢ {t.category_name}
                     </p>
                   </div>
                   <div className={cn(
@@ -242,7 +239,7 @@ const TransactionsPage = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-12 w-12 rounded-2xl hover:bg-red-500/10 text-white/10 hover:text-red-500 transition-colors"
+                    className="h-12 w-12 rounded-2xl hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
                     onClick={() => handleDeleteTransaction(t.id)}
                   >
                     <Trash2 className="h-5 w-5" />
@@ -254,10 +251,10 @@ const TransactionsPage = () => {
           
           <Button 
             variant="ghost" 
-            className="mt-8 h-14 rounded-2xl text-[10px] font-bold text-white/20 hover:text-white uppercase tracking-[0.3em] hover:bg-white/[0.02] transition-all"
+            className="mt-8 h-14 rounded-2xl text-[10px] font-bold text-muted-foreground hover:text-white uppercase tracking-[0.3em] hover:bg-white/[0.02] transition-all"
             onClick={() => navigate("/history")}
           >
-            Ver histórico completo
+            Ver histÃ³rico completo
           </Button>
         </div>
       )}
@@ -278,3 +275,5 @@ const TransactionsPage = () => {
 };
 
 export default TransactionsPage;
+
+

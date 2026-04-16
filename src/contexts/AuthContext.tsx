@@ -5,10 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  role: 'admin' | 'member' | 'viewer' | null;
+  familyId: string | null;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -18,10 +21,77 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<'admin' | 'member' | 'viewer' | null>(null);
+  const [familyId, setFamilyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const tryAcceptInvitation = async () => {
+    try {
+      const { error } = await supabase.rpc('accept_my_family_invitation');
+      if (error) {
+        throw error;
+      }
+    } catch (err) {
+      console.error("Error accepting family invitation:", err);
+    }
+  };
+
+  // Function to load role and family
+  const loadUserData = async (userId: string) => {
+    try {
+      let { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('family_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      if (!profile?.family_id) {
+        await tryAcceptInvitation();
+
+        const profileReload = await supabase
+          .from('profiles')
+          .select('family_id')
+          .eq('user_id', userId)
+          .single();
+
+        if (profileReload.error) {
+          throw profileReload.error;
+        }
+
+        profile = profileReload.data;
+      }
+
+      const currentFamilyId = profile?.family_id ?? null;
+      setFamilyId(currentFamilyId);
+
+      if (currentFamilyId) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('family_id', currentFamilyId)
+          .maybeSingle();
+
+        const rawRole = roleData?.role;
+        const normalizedRole = rawRole === 'standard' ? 'member' : rawRole ?? null;
+        setRole(normalizedRole as 'admin' | 'member' | 'viewer' | null);
+      } else {
+        setRole(null);
+      }
+    } catch (err) {
+      console.error("Error loading extended auth data:", err);
+    }
+  };
+
+  const refreshAuth = async () => {
+    if (user) await loadUserData(user.id);
+  };
+
   useEffect(() => {
-    // Safety timeout to prevent infinite loading if Supabase hangs
     const safetyTimeout = setTimeout(() => {
       if (loading) {
         console.warn("Auth initialization safety timeout reached. Forcing loading = false.");
@@ -31,23 +101,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        // Use setTimeout to avoid deadlock in some SDK versions
-        setTimeout(() => {
+        // Use setTimeout to avoid deadlock in some Supabase SDK versions
+        setTimeout(async () => {
           setSession(session);
-          setUser(session?.user ?? null);
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+          
+          if (currentUser) {
+            try {
+              await loadUserData(currentUser.id);
+            } catch (err) {
+              console.error("loadUserData failed in onAuthStateChange:", err);
+            }
+          } else {
+            setRole(null);
+            setFamilyId(null);
+          }
+          
           setLoading(false);
           clearTimeout(safetyTimeout);
         }, 0);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
-      if (session) {
-        setLoading(false);
-        clearTimeout(safetyTimeout);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        try {
+          await loadUserData(currentUser.id);
+        } catch (err) {
+          console.error("loadUserData failed in getSession:", err);
+        }
       }
+      
+      setLoading(false);
+      clearTimeout(safetyTimeout);
     }).catch(err => {
       console.error("Critical error getting session:", err);
       setLoading(false);
@@ -82,7 +173,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      role, 
+      familyId, 
+      loading, 
+      signUp, 
+      signIn, 
+      signOut,
+      refreshAuth
+    }}>
       {children}
     </AuthContext.Provider>
   );

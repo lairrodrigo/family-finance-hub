@@ -483,40 +483,53 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
+          card_id: string | null
           category_id: string | null
           created_at: string
           date: string
           description: string | null
           family_id: string
           id: string
+          payment_type: string | null
           type: string
           user_id: string
         }
         Insert: {
           account_id?: string | null
           amount: number
+          card_id?: string | null
           category_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
           family_id: string
           id?: string
+          payment_type?: string | null
           type: string
           user_id: string
         }
         Update: {
           account_id?: string | null
           amount?: number
+          card_id?: string | null
           category_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
           family_id?: string
           id?: string
+          payment_type?: string | null
           type?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
@@ -577,6 +590,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_my_family_invitation: { Args: never; Returns: Json }
       add_family_member: {
         Args: {
           p_family_id: string
@@ -595,9 +609,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      invite_family_member: {
+        Args: {
+          p_email: string
+          p_family_id: string
+          p_role?: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
+      }
     }
     Enums: {
-      app_role: "admin" | "standard"
+      app_role: "admin" | "member" | "viewer" | "standard"
     }
     CompositeTypes: {
       [_ in never]: never
