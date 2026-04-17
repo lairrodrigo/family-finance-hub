@@ -13,6 +13,7 @@ import { Upload, FileText, X, Mic, Square, Loader2, ArrowRight } from "lucide-re
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface ImportHistoryModalProps {
   open: boolean;
