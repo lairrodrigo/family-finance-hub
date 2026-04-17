@@ -149,11 +149,18 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:gap-4 mt-8 pt-6 pb-2 border-t border-white/5">
+          <Button 
+            variant="ghost"
+            onClick={() => onOpenChange?.(false)}
+            className="w-full h-16 rounded-[1.5rem] text-muted-foreground font-bold text-lg hover:bg-white/5 hover:text-white transition-all order-2 sm:order-1"
+          >
+            Cancelar
+          </Button>
           <Button 
             onClick={handleAddCard} 
             disabled={saving}
-            className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black text-lg gap-2 shadow-xl shadow-white/5 hover:bg-white/90"
+            className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black text-lg gap-2 shadow-2xl shadow-white/10 hover:bg-white/90 transition-all active:scale-[0.98] order-1 sm:order-2"
           >
             {saving ? <Loader2 className="h-6 w-6 animate-spin" /> : <Save className="h-6 w-6" />}
             Salvar Cartão
