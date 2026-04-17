@@ -448,28 +448,27 @@ const HistoryPage = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <div className="inline-flex h-12 w-full items-center rounded-2xl border border-white/[0.08] bg-white/[0.03] p-1 backdrop-blur-md shadow-2xl sm:w-auto">
+            <div className="flex items-center gap-3">
               {canCreateTransaction && (
                 <button
                   type="button"
                   onClick={() => setIsImportModalOpen(true)}
-                  className="inline-flex h-full items-center rounded-xl px-5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:bg-white/[0.05] active:scale-[0.98]"
+                  className="group relative flex h-12 flex-1 items-center justify-center rounded-2xl bg-white px-6 font-black uppercase tracking-widest text-black shadow-[0_10px_30px_-10px_rgba(255,255,255,0.3)] transition-all hover:scale-[1.03] active:scale-[0.97] sm:h-14 sm:flex-none sm:px-8"
                 >
-                  <Plus className="mr-2 h-4 w-4 opacity-50" />
-                  Importar
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="text-[10px] sm:text-[11px]">Importar</span>
                 </button>
               )}
-              <div className="mx-1 h-4 w-[1px] bg-white/10" />
               <button
                 type="button"
                 onClick={handleTopExport}
                 className={cn(
-                  "inline-flex h-full items-center px-5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:bg-white/[0.05] active:scale-[0.98]",
-                  !canCreateTransaction && "rounded-xl",
+                  "group flex h-12 flex-1 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-6 font-black uppercase tracking-widest text-white backdrop-blur-md transition-all hover:bg-white/[0.08] active:scale-[0.97] sm:h-14 sm:flex-none sm:px-8",
+                  !canCreateTransaction && "w-full",
                 )}
               >
-                <Download className="mr-2 h-4 w-4 opacity-50" />
-                Exportar
+                <Download className="mr-2 h-4 w-4 opacity-50 transition-opacity group-hover:opacity-100" />
+                <span className="text-[10px] sm:text-[11px]">Exportar</span>
               </button>
             </div>
           </div>
