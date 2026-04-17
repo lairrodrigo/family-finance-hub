@@ -51,7 +51,7 @@ const HomeGoalsSection = () => {
 
 const HomePage = () => {
   const { showValues, toggleShowValues } = useSettings();
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const { canCreateTransaction, isAdmin, canManageAssets } = usePermissions();
   const navigate = useNavigate();
   
@@ -62,67 +62,72 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-      fetchCards();
+    if (user && familyId) {
+      console.log("HomePage: Starting data fetch for family", familyId);
+      const startTime = performance.now();
+      
+      Promise.all([
+        fetchDashboardData(familyId),
+        fetchCards(familyId)
+      ]).then(() => {
+        const duration = performance.now() - startTime;
+        console.log(`HomePage: Data loaded in ${duration.toFixed(2)}ms`);
+      });
+    } else if (user && !familyId) {
+      console.warn("HomePage: User logged in but no familyId found yet.");
     }
-  }, [user]);
+  }, [user, familyId]);
 
-  const fetchCards = async () => {
+  const fetchCards = async (currentFamilyId: string) => {
     try {
-      if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user.id).single();
-      if (!profile?.family_id) return;
-
       const { data, error } = await supabase
         .from("cards")
         .select("*")
-        .eq("family_id", profile.family_id)
+        .eq("family_id", currentFamilyId)
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching cards:", error);
+        console.error("HomePage: Error fetching cards:", error);
       } else if (data) {
         setCards(data);
       }
     } catch (err) {
-      console.error("Critical error in fetchCards:", err);
+      console.error("HomePage: Critical error in fetchCards:", err);
     }
   };
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (currentFamilyId: string) => {
     try {
       setLoading(true);
-      if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user.id).single();
-      if (!profile?.family_id) return;
+      
+      const [txsResponse, catsResponse] = await Promise.all([
+        supabase
+          .from("transactions")
+          .select("amount, type, category_id, date")
+          .eq("family_id", currentFamilyId)
+          .order("date", { ascending: false }),
+        supabase
+          .from("categories")
+          .select("id, name")
+      ]);
 
-      const { data: txs, error: txsError } = await supabase
-        .from("transactions")
-        .select("amount, type, category_id, date")
-        .eq("family_id", profile.family_id)
-        .order("date", { ascending: false });
-
-      if (txsError) {
-        console.error("Error fetching transactions:", txsError);
-      } else if (txs) {
+      if (txsResponse.error) {
+        console.error("HomePage: Error fetching transactions:", txsResponse.error);
+      } else if (txsResponse.data) {
+        const txs = txsResponse.data;
         setFullTransactions(txs);
         const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
         const expense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
         setTotals({ income, expense });
       }
 
-      const { data: cats, error: catsError } = await supabase
-        .from("categories")
-        .select("id, name");
-
-      if (catsError) {
-        console.error("Error fetching categories:", catsError);
-      } else if (cats) {
-        setCategories(cats);
+      if (catsResponse.error) {
+        console.error("HomePage: Error fetching categories:", catsResponse.error);
+      } else if (catsResponse.data) {
+        setCategories(catsResponse.data);
       }
     } catch (err) {
-      console.error("Critical error in fetchDashboardData:", err);
+      console.error("HomePage: Critical error in fetchDashboardData:", err);
     } finally {
       setLoading(false);
     }

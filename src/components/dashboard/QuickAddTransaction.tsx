@@ -15,7 +15,7 @@ interface QuickAddTransactionProps {
 }
 
 export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [cards, setCards] = useState<any[]>([]);
@@ -30,10 +30,10 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   const [errors, setErrors] = useState<{ amount?: string; category?: string; cardId?: string }>({});
 
   useEffect(() => {
-    if (user) {
-      void fetchData();
+    if (user && familyId) {
+      void fetchData(familyId);
     }
-  }, [user, type]);
+  }, [user, familyId, type]);
 
   useEffect(() => {
     if (type !== "expense") {
@@ -50,20 +50,18 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
     }
   }, [paymentType]);
 
-  const fetchData = async () => {
+  const fetchData = async (currentFamilyId: string) => {
     try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      const familyId = profile?.family_id;
-      if (!familyId) return;
-
+      console.log("QuickAddTransaction: Fetching data for family", currentFamilyId);
+      
       const { data: loadedCategories, error: categoriesError } = await supabase
         .from("categories")
         .select("*")
-        .or(`family_id.eq.${familyId},is_default.eq.true`)
+        .or(`family_id.eq.${currentFamilyId},is_default.eq.true`)
         .eq("type", type);
 
       if (categoriesError) {
-        console.error("Erro ao buscar categorias:", categoriesError);
+        console.error("QuickAddTransaction: Erro ao buscar categorias:", categoriesError);
       }
 
       const nextCategories = loadedCategories || [];
@@ -75,17 +73,17 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
       const { data: loadedCards, error: cardsError } = await supabase
         .from("cards")
         .select("id, name, last_four")
-        .eq("family_id", familyId)
+        .eq("family_id", currentFamilyId)
         .eq("is_active", true)
         .order("name");
 
       if (cardsError) {
-        console.error("Erro ao buscar cartoes:", cardsError);
+        console.error("QuickAddTransaction: Erro ao buscar cartoes:", cardsError);
       }
 
       setCards(loadedCards || []);
     } catch (err) {
-      console.error("Erro ao buscar dados:", err);
+      console.error("QuickAddTransaction: Erro ao buscar dados:", err);
     }
   };
 
@@ -127,23 +125,20 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
       return;
     }
 
+    if (!familyId) {
+      toast.error("Família não encontrada. Aguarde o carregamento ou configure seu perfil.");
+      return;
+    }
+
     setErrors({});
     setLoading(true);
 
     try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-
-      if (!profile?.family_id) {
-        toast.error("Família não encontrada. Configure seu perfil primeiro.");
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from("transactions" as any)
         .insert([
           {
-            family_id: profile.family_id,
+            family_id: familyId,
             user_id: user?.id,
             created_by: user?.id,
             amount: parsedAmount,
@@ -168,7 +163,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
       setCardId("");
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      console.error("Erro ao salvar transação:", err);
+      console.error("QuickAddTransaction: Erro ao salvar transação:", err);
       toast.error("Erro ao salvar: " + err.message);
     } finally {
       setLoading(false);

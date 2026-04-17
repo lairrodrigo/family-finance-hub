@@ -16,7 +16,7 @@ export interface Goal {
 }
 
 export const useGoals = () => {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: goals, isLoading, error } = useQuery({
@@ -38,15 +38,7 @@ export const useGoals = () => {
   const createGoal = useMutation({
     mutationFn: async (newGoal: Partial<Goal>) => {
       if (!user) throw new Error("User not authenticated");
-
-      // Get family_id from profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("family_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!profile?.family_id) throw new Error("User has no family assigned");
+      if (!familyId) throw new Error("User has no family assigned");
 
       const { data, error } = await supabase
         .from("goals")
@@ -58,16 +50,13 @@ export const useGoals = () => {
           deadline: newGoal.deadline ?? null,
           is_completed: newGoal.is_completed ?? false,
           user_id: user.id,
-          family_id: profile.family_id,
+          family_id: familyId,
         })
         .select();
 
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
       return data[0];
-
-      if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
