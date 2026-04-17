@@ -518,36 +518,45 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
+          card_id: string | null
           category_id: string | null
           created_at: string
+          created_by: string | null
           date: string
           description: string | null
           family_id: string
           id: string
+          payment_type: string | null
           type: string
           user_id: string
         }
         Insert: {
           account_id?: string | null
           amount: number
+          card_id?: string | null
           category_id?: string | null
           created_at?: string
+          created_by?: string | null
           date?: string
           description?: string | null
           family_id: string
           id?: string
+          payment_type?: string | null
           type: string
           user_id: string
         }
         Update: {
           account_id?: string | null
           amount?: number
+          card_id?: string | null
           category_id?: string | null
           created_at?: string
+          created_by?: string | null
           date?: string
           description?: string | null
           family_id?: string
           id?: string
+          payment_type?: string | null
           type?: string
           user_id?: string
         }
@@ -557,6 +566,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
             referencedColumns: ["id"]
           },
           {

@@ -112,16 +112,18 @@ export const useSmartImport = () => {
         
         return {
           user_id: user.id,
+          created_by: user.id,
           family_id: profile.family_id,
           amount: Math.abs(exp.valor),
           type: 'expense',
           description: exp.descricao,
           date: new Date(exp.data).toISOString(),
-          category_id: foundCat?.id || fallbackCategoryId
+          category_id: foundCat?.id || fallbackCategoryId,
+          payment_type: 'cash',
         };
       });
 
-      const { data: trxData, error: insertError } = await supabase.from('transactions').insert(payload).select();
+      const { data: trxData, error: insertError } = await (supabase.from('transactions') as any).insert(payload).select();
       if (insertError) throw insertError;
       if (!trxData || trxData.length === 0) throw new Error("Acesso negado: Você não possui permissão para importar transações.");
 

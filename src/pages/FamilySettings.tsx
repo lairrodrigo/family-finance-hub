@@ -206,7 +206,7 @@ const FamilySettings = () => {
     if (!isAdmin) return;
     try {
       const { error } = await supabase.rpc("cancel_family_invitation", {
-        p_invite_id: inviteId,
+        p_invitation_id: inviteId,
       });
       if (error) throw error;
       toast.success("Convite cancelado.");
@@ -295,8 +295,9 @@ const FamilySettings = () => {
 
       if (error) throw error;
 
-      if (data?.status === "linked") {
-        toast.success(`${data.full_name || cleanEmail} adicionado diretamente!`);
+      const result = data as { status?: string; full_name?: string } | null;
+      if (result?.status === "linked") {
+        toast.success(`${result.full_name || cleanEmail} adicionado diretamente!`);
       } else {
         toast.success(`Convite enviado para ${cleanEmail}!`);
       }

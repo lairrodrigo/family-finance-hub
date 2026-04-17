@@ -24,8 +24,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       <SidebarInset className="flex flex-col bg-transparent w-full min-w-0 border-none">
-        <div className="flex-1 w-full overflow-x-hidden">
-          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-8 pb-40 lg:pb-8">
+        <div className="flex-1 w-full overflow-x-hidden safe-top">
+          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-8">
             {children}
           </div>
         </div>

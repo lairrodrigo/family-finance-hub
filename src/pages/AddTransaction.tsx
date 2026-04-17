@@ -203,6 +203,7 @@ const AddTransactionPage = () => {
           {
             family_id: profile.family_id,
             user_id: user?.id,
+            created_by: user?.id,
             amount: parsedAmount,
             type,
             description: description || "",
@@ -211,7 +212,7 @@ const AddTransactionPage = () => {
             payment_type: type === "expense" ? paymentType : null,
             card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
             date,
-          },
+          } as any,
         ])
         .select();
 

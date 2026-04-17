@@ -634,13 +634,33 @@ const HistoryPage = () => {
                               <h4 className="truncate pr-2 text-sm font-bold text-white sm:text-base">
                                 {transaction.description || transaction.category_name}
                               </h4>
-                              <div className="mt-0.5 flex items-center gap-2 sm:mt-1">
+                              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:mt-1">
                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:text-[10px]">
                                   {new Date(transaction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                                 </span>
                                 <span className="h-1 w-1 rounded-full bg-white/10" />
                                 <span className="truncate text-[9px] font-bold uppercase tracking-widest text-primary/40 sm:text-[10px]">
                                   {transaction.category_name}
+                                </span>
+                                {transaction.payment_type === "credit_card" && (
+                                  <>
+                                    <span className="h-1 w-1 rounded-full bg-white/10" />
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 sm:text-[10px]">
+                                      Crédito{transaction.card_last_four ? ` •••• ${transaction.card_last_four}` : ""}
+                                    </span>
+                                  </>
+                                )}
+                                {transaction.payment_type === "cash" && (
+                                  <>
+                                    <span className="h-1 w-1 rounded-full bg-white/10" />
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/70 sm:text-[10px]">
+                                      Dinheiro
+                                    </span>
+                                  </>
+                                )}
+                                <span className="h-1 w-1 rounded-full bg-white/10" />
+                                <span className="text-[9px] font-medium normal-case tracking-normal text-muted-foreground/80 sm:text-[10px]">
+                                  por {profiles[transaction.user_id]?.full_name?.split(" ")[0] || profiles[transaction.user_id]?.email?.split("@")[0] || "membro"}
                                 </span>
                               </div>
                             </div>
