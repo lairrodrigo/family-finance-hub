@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Function to load role and family
   const loadUserData = async (userId: string) => {
+    console.log("AuthContext: Loading data for user", userId);
     try {
       let { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -48,26 +49,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (profileError) {
-        throw profileError;
-      }
-
-      if (!profileData?.family_id) {
-        await tryAcceptInvitation();
-
-        const profileReload = await supabase
-          .from('profiles')
-          .select('family_id, full_name, avatar_url')
-          .eq('user_id', userId)
-          .single();
-
-        if (profileReload.error) {
-          throw profileReload.error;
+        if (profileError.code === 'PGRST116') {
+          console.warn("AuthContext: Profile not found for user. Attempting to accept invitation or wait for trigger...");
+          await tryAcceptInvitation();
+          
+          // Retry loading profile once after attempting to accept invitation
+          const retry = await supabase
+            .from('profiles')
+            .select('family_id, full_name, avatar_url')
+            .eq('user_id', userId)
+            .single();
+            
+          if (retry.error) {
+            console.error("AuthContext: Profile still not found after retry:", retry.error);
+            // Don't throw, just let it be null so the app can handle it
+          } else {
+            profileData = retry.data;
+          }
+        } else {
+          throw profileError;
         }
-
-        profileData = profileReload.data;
       }
 
       const currentFamilyId = profileData?.family_id ?? null;
+      console.log("AuthContext: User data loaded. Family:", currentFamilyId, "Role info next...");
+      
       setFamilyId(currentFamilyId);
       setProfile({
         full_name: profileData?.full_name ?? null,
@@ -75,21 +81,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (currentFamilyId) {
-        const { data: roleData } = await supabase
+        const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
           .eq('family_id', currentFamilyId)
           .maybeSingle();
 
+        if (roleError) console.error("AuthContext: Error loading role:", roleError);
+        
         const rawRole = roleData?.role;
         const normalizedRole = rawRole === 'standard' ? 'member' : rawRole ?? null;
+        console.log("AuthContext: Logic complete. Role:", normalizedRole);
         setRole(normalizedRole as 'admin' | 'member' | 'viewer' | null);
       } else {
         setRole(null);
       }
     } catch (err) {
-      console.error("Error loading extended auth data:", err);
+      console.error("AuthContext: Critical error in loadUserData:", err);
     }
   };
 
@@ -98,61 +107,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const safetyTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn("Auth initialization safety timeout reached. Forcing loading = false.");
+      if (mounted && loading) {
+        console.warn("AuthContext: Initialization safety timeout reached.");
         setLoading(false);
       }
     }, 10000);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        // Use setTimeout to avoid deadlock in some Supabase SDK versions
-        setTimeout(async () => {
-          setSession(session);
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
-          
-          if (currentUser) {
-            try {
-              await loadUserData(currentUser.id);
-            } catch (err) {
-              console.error("loadUserData failed in onAuthStateChange:", err);
-            }
-          } else {
-            setRole(null);
-            setFamilyId(null);
-            setProfile(null);
-          }
-          
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          await loadUserData(currentUser.id);
+        }
+      } catch (err) {
+        console.error("AuthContext: Error during initialization:", err);
+      } finally {
+        if (mounted) {
           setLoading(false);
           clearTimeout(safetyTimeout);
-        }, 0);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("AuthContext: onAuthStateChange event:", event);
+        if (!mounted) return;
+
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          await loadUserData(currentUser.id);
+        } else if (event === 'SIGNED_OUT') {
+          setRole(null);
+          setFamilyId(null);
+          setProfile(null);
+        }
+        
+        setLoading(false);
+        clearTimeout(safetyTimeout);
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        try {
-          await loadUserData(currentUser.id);
-        } catch (err) {
-          console.error("loadUserData failed in getSession:", err);
-        }
-      }
-      
-      setLoading(false);
-      clearTimeout(safetyTimeout);
-    }).catch(err => {
-      console.error("Critical error getting session:", err);
-      setLoading(false);
-      clearTimeout(safetyTimeout);
-    });
-
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       clearTimeout(safetyTimeout);
     };

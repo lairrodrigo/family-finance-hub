@@ -23,13 +23,17 @@ const Auth = () => {
     setLoading(true);
 
     if (isLogin) {
+      console.log("Auth: Attempting login for", email);
       const { error } = await signIn(email, password);
       if (error) {
+        console.error("Auth: Login failed:", error);
         toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
       }
     } else {
+      console.log("Auth: Attempting signup for", email);
       const { error } = await signUp(email, password, fullName);
       if (error) {
+        console.error("Auth: Signup failed:", error);
         toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Conta criada!", description: "Verifique seu email para confirmar." });
