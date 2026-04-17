@@ -145,6 +145,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
           {
             family_id: profile.family_id,
             user_id: user?.id,
+            created_by: user?.id,
             amount: parsedAmount,
             type,
             description: description || "",
