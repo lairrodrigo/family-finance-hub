@@ -217,6 +217,41 @@ export type Database = {
         }
         Relationships: []
       }
+      family_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          family_id: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          family_id: string
+          id?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          family_id?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_invitations_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           category: string | null
@@ -483,53 +518,40 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
-          card_id: string | null
           category_id: string | null
           created_at: string
           date: string
           description: string | null
           family_id: string
           id: string
-          payment_type: string | null
           type: string
           user_id: string
         }
         Insert: {
           account_id?: string | null
           amount: number
-          card_id?: string | null
           category_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
           family_id: string
           id?: string
-          payment_type?: string | null
           type: string
           user_id: string
         }
         Update: {
           account_id?: string | null
           amount?: number
-          card_id?: string | null
           category_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
           family_id?: string
           id?: string
-          payment_type?: string | null
           type?: string
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "transactions_card_id_fkey"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "cards"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
@@ -599,7 +621,15 @@ export type Database = {
         }
         Returns: Json
       }
+      cancel_family_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
+      }
       get_financial_insights: { Args: never; Returns: Json }
+      get_role_in_family: {
+        Args: { _family_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_family_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -608,12 +638,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      cancel_family_invitation: {
-        Args: {
-          p_invite_id: string
-        }
-        Returns: Json
       }
       invite_family_member: {
         Args: {
@@ -624,18 +648,18 @@ export type Database = {
         Returns: Json
       }
       list_family_pending_invitations: {
-        Args: {
-          p_family_id: string
-        }
+        Args: { p_family_id: string }
         Returns: {
           created_at: string
           email: string
           id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
         }[]
       }
     }
     Enums: {
-      app_role: "admin" | "member" | "viewer" | "standard"
+      app_role: "admin" | "standard" | "member" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -763,7 +787,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "standard"],
+      app_role: ["admin", "standard", "member", "viewer"],
     },
   },
 } as const
