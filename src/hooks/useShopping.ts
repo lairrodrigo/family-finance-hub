@@ -18,32 +18,44 @@ export const useShopping = () => {
     const { data, error } = await supabase
       .from('shopping_lists' as any)
       .insert([{ name, store, family_id, user_id }] as any)
-      .select()
-      .single();
+      .select();
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
+    return data[0];
   };
 
   const deleteShoppingList = async (id: string) => {
-    const { error } = await (supabase.from('shopping_lists' as any) as any).delete().eq('id', id);
+    const { data, error } = await (supabase.from('shopping_lists' as any) as any)
+      .delete()
+      .eq('id', id)
+      .select();
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
   };
 
   const updateShoppingList = async (id: string, updates: any) => {
-    const { error } = await (supabase.from('shopping_lists' as any) as any).update(updates).eq('id', id);
+    const { data, error } = await (supabase.from('shopping_lists' as any) as any)
+      .update(updates)
+      .eq('id', id)
+      .select();
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
   };
 
   const duplicateShoppingList = async (id: string, user_id: string, family_id: string) => {
     const { data: listData } = await supabase.from('shopping_lists' as any).select('*').eq('id', id).single();
     const { data: itemsData } = await supabase.from('shopping_list_items' as any).select('*').eq('list_id', id) as any;
 
-    const { data: newList } = await supabase.from('shopping_lists' as any).insert([{
+    const { data: newListData, error: listError } = await supabase.from('shopping_lists' as any).insert([{
       name: `${(listData as any).name} (Cópia)`,
       store: (listData as any).store,
       family_id,
       user_id
-    }] as any).select().single();
+    }] as any).select();
+
+    if (listError) throw listError;
+    if (!newListData || newListData.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
+    const newList = newListData[0];
 
     if (itemsData && itemsData.length > 0) {
       const newItems = itemsData.map((item: any) => ({
@@ -55,7 +67,12 @@ export const useShopping = () => {
         min_qty_wholesale: item.min_qty_wholesale,
         price_type: item.price_type
       }));
-      await supabase.from('shopping_list_items' as any).insert(newItems as any);
+      const { data: insertedItems, error: itemsError } = await supabase
+        .from('shopping_list_items' as any)
+        .insert(newItems as any)
+        .select();
+      if (itemsError) throw itemsError;
+      if (!insertedItems || insertedItems.length === 0) throw new Error("Acesso negado: Você não possui permissão para duplicar itens desta lista.");
     }
 
     return newList;

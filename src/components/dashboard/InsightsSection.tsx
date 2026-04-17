@@ -1,15 +1,16 @@
 import { Card } from "@/components/ui/card";
-import { Brain, TrendingUp, AlertTriangle, PieChart, Target, ArrowDown, Sparkles, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { generateInsights, Insight } from "@/lib/utils/financeAnalyzer";
+import { AlertTriangle, ArrowDown, Loader2, PieChart, ShieldAlert, Sparkles, Target, TrendingUp } from "lucide-react";
+import { calculateSpendingGuide, generateInsights, type Insight } from "@/lib/utils/financeAnalyzer";
 import { cn } from "@/lib/utils";
 
-const IconMap: Record<string, any> = {
-  PieChart,
-  TrendingUp,
-  ArrowDown,
-  Target,
+const iconMap: Record<string, any> = {
   AlertTriangle,
+  ArrowDown,
+  PieChart,
+  ShieldAlert,
+  Sparkles,
+  Target,
+  TrendingUp,
 };
 
 interface InsightsSectionProps {
@@ -18,86 +19,142 @@ interface InsightsSectionProps {
   isLoading?: boolean;
 }
 
+const formatCurrency = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const SpendingGuideCard = ({
+  amount,
+  state,
+}: {
+  amount: number;
+  state: "safe" | "warning" | "over";
+}) => (
+  <Card
+    className={cn(
+      "relative overflow-hidden rounded-[2.5rem] border p-7 shadow-2xl",
+      state === "safe" && "border-emerald-500/10 bg-gradient-to-br from-[#0C140F] via-[#08100B] to-[#050505]",
+      state === "warning" && "border-amber-500/10 bg-gradient-to-br from-[#17120A] via-[#100C08] to-[#050505]",
+      state === "over" && "border-red-500/10 bg-gradient-to-br from-[#180C0C] via-[#100808] to-[#050505]",
+    )}
+  >
+    <div
+      className={cn(
+        "absolute -right-10 -top-10 h-36 w-36 rounded-full blur-[70px]",
+        state === "safe" && "bg-emerald-400/10",
+        state === "warning" && "bg-amber-400/10",
+        state === "over" && "bg-red-400/10",
+      )}
+    />
+
+    <div className="relative space-y-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">
+        Quanto você ainda pode gastar este mês
+      </p>
+
+      <div className="space-y-1">
+        <p
+          className={cn(
+            "text-4xl font-black tracking-tight",
+            state === "safe" && "text-emerald-300",
+            state === "warning" && "text-amber-300",
+            state === "over" && "text-red-300",
+          )}
+        >
+          {formatCurrency(Math.abs(amount))}
+        </p>
+        <p
+          className={cn(
+            "text-sm font-medium",
+            state === "safe" && "text-emerald-200/85",
+            state === "warning" && "text-amber-200/85",
+            state === "over" && "text-red-200/85",
+          )}
+        >
+          {state === "safe" && "Seu mês segue sob controle."}
+          {state === "warning" && "Vale desacelerar um pouco nos próximos gastos."}
+          {state === "over" && "Agora é hora de segurar até fechar o mês."}
+        </p>
+      </div>
+    </div>
+  </Card>
+);
+
+const InsightMiniCard = ({ insight }: { insight: Insight }) => {
+  const Icon = iconMap[insight.iconName] || Sparkles;
+
+  return (
+    <Card
+      className={cn(
+        "rounded-[1.75rem] border bg-[#0C0C0E] p-5 shadow-xl transition-all",
+        insight.type === "danger" && "border-red-500/10",
+        insight.type === "warning" && "border-amber-500/10",
+        insight.type === "success" && "border-emerald-500/10",
+        insight.type === "info" && "border-white/[0.05]",
+      )}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={cn(
+            "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.04]",
+            insight.type === "danger" && "bg-red-500/10 text-red-400",
+            insight.type === "warning" && "bg-amber-500/10 text-amber-400",
+            insight.type === "success" && "bg-emerald-500/10 text-emerald-400",
+            insight.type === "info" && "bg-white/[0.03] text-primary",
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+
+        <div className="min-w-0 space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">{insight.title}</p>
+          <p className="text-sm font-medium leading-relaxed text-muted-foreground">{insight.description}</p>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 export const InsightsSection = ({ transactions, categories, isLoading }: InsightsSectionProps) => {
+  const spendingGuide = calculateSpendingGuide(transactions);
   const insights = generateInsights(transactions, categories);
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="h-40 bg-white/[0.02] rounded-[2.5rem] border border-white/[0.05] flex items-center justify-center">
-          <Loader2 className="h-6 w-6 text-white/10 animate-spin" />
+      <div className="space-y-4">
+        <div className="flex h-44 items-center justify-center rounded-[2.5rem] border border-white/[0.05] bg-white/[0.02]">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       </div>
     );
   }
 
-  if (insights.length === 0) {
-    return (
-      <Card className="relative p-7 border border-white/[0.05] bg-gradient-to-br from-[#0C0C0E] to-[#050505] rounded-[2.5rem] overflow-hidden group shadow-2xl">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 blur-[60px] rounded-full" />
-        <div className="flex gap-5">
-          <div className="h-14 w-14 rounded-2xl bg-[#121212] flex items-center justify-center shrink-0 border border-white/[0.03]">
-            <Brain className="h-7 w-7 text-white/10" />
-          </div>
-          <div className="space-y-1.5 pt-1">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.25em]">Em breve</p>
-            <p className="text-sm text-white/20 leading-relaxed font-medium">
-              Seus insights financeiros aparecerão aqui conforme você registrar transações.
-            </p>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {insights.map((insight, idx) => {
-        const Icon = IconMap[insight.iconName] || Sparkles;
-        
-        return (
-          <Card 
-            key={idx} 
-            className={cn(
-              "relative p-7 border border-white/[0.05] bg-gradient-to-br from-[#0C0C0E] to-[#050505] rounded-[2.5rem] overflow-hidden group shadow-2xl transition-all duration-500 hover:border-white/10",
-              insight.type === 'danger' && "border-red-500/10 shadow-red-500/5",
-              insight.type === 'success' && "border-green-500/10 shadow-green-500/5"
-            )}
-          >
-            {/* Glow accent */}
-            <div className={cn(
-              "absolute -top-10 -right-10 w-32 h-32 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700",
-              insight.type === 'danger' ? "bg-red-500/10" : insight.type === 'success' ? "bg-green-500/10" : "bg-primary/10"
-            )} />
-            
-            <div className="flex gap-5">
-              <div className={cn(
-                "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border border-white/[0.03] shadow-inner",
-                insight.type === 'danger' ? "bg-red-500/5 text-red-400" : 
-                insight.type === 'success' ? "bg-green-500/5 text-green-400" : 
-                "bg-[#121212] text-primary"
-              )}>
-                <Icon className="h-7 w-7" />
-              </div>
-              
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-2">
-                  <p className={cn(
-                    "text-[10px] font-bold uppercase tracking-[0.25em]",
-                    insight.type === 'danger' ? "text-red-400" : insight.type === 'success' ? "text-green-400" : "text-primary"
-                  )}>
-                    {insight.title}
-                  </p>
-                  <Badge variant="outline" className="text-[8px] h-4 py-0 border-white/5 text-white/20">IA</Badge>
-                </div>
-                <p className="text-sm text-white/60 leading-relaxed font-medium tracking-wide">
-                  {insight.description}
-                </p>
-              </div>
-            </div>
+      <SpendingGuideCard
+        amount={spendingGuide.state === "over" ? spendingGuide.remainingBalance : spendingGuide.availableToSpend}
+        state={spendingGuide.state}
+      />
+
+      <div className="space-y-4 rounded-[2.5rem] border border-white/[0.05] bg-[#09090B] p-5 shadow-2xl">
+        <div className="px-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Fique ligado</p>
+          <p className="mt-1 text-sm font-medium text-muted-foreground">Sinais rápidos do que mais importa agora.</p>
+        </div>
+
+        {insights.length === 0 ? (
+          <Card className="rounded-[1.75rem] border border-white/[0.05] bg-[#0C0C0E] p-5">
+            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+              Assim que você movimentar mais o mês, eu começo a destacar o que merece atenção.
+            </p>
           </Card>
-        );
-      })}
+        ) : (
+          <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
+            {insights.map((insight) => (
+              <InsightMiniCard key={insight.id} insight={insight} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

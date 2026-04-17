@@ -18,7 +18,7 @@ const BudgetsPage = () => {
         </Button>
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-white tracking-tight">Orçamentos</h1>
-          <p className="text-sm font-medium text-white/20">Limite seus gastos por categoria</p>
+          <p className="text-sm font-medium text-muted-foreground">Limite seus gastos por categoria</p>
         </div>
       </div>
 
@@ -36,7 +36,7 @@ const BudgetsPage = () => {
                 <Sparkles className="h-4 w-4 text-primary animate-pulse" />
                 <h2 className="text-2xl font-bold text-white tracking-tight">Em Breve</h2>
               </div>
-              <p className="text-sm font-medium text-white/20 max-w-xs mx-auto leading-relaxed">
+              <p className="text-sm font-medium text-muted-foreground max-w-xs mx-auto leading-relaxed">
                 Estamos preparando uma ferramenta completa para você planejar cada centavo do seu mês.
               </p>
             </div>
@@ -55,3 +55,4 @@ const BudgetsPage = () => {
 };
 
 export default BudgetsPage;
+

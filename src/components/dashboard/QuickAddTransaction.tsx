@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Plus, ArrowUp, ArrowDown, Tag, Mic, Paperclip, Loader2 } from "lucide-react";
+import { Plus, Tag, Mic, Paperclip, Loader2, CreditCard } from "lucide-react";
 import { ImportHistoryModal } from "@/components/ImportHistoryModal";
 
 interface QuickAddTransactionProps {
@@ -24,115 +18,153 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [cards, setCards] = useState<any[]>([]);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  
-  // Form State
+
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
-  const [errors, setErrors] = useState<{ amount?: string; category?: string }>({});
+  const [paymentType, setPaymentType] = useState<"cash" | "credit_card">("cash");
+  const [cardId, setCardId] = useState<string>("");
+  const [errors, setErrors] = useState<{ amount?: string; category?: string; cardId?: string }>({});
 
   useEffect(() => {
     if (user) {
-      fetchCategories();
+      void fetchData();
     }
   }, [user, type]);
 
-  const fetchCategories = async () => {
+  useEffect(() => {
+    if (type !== "expense") {
+      setPaymentType("cash");
+      setCardId("");
+      setErrors((prev) => ({ ...prev, cardId: undefined }));
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (paymentType !== "credit_card") {
+      setCardId("");
+      setErrors((prev) => ({ ...prev, cardId: undefined }));
+    }
+  }, [paymentType]);
+
+  const fetchData = async () => {
     try {
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
       const familyId = profile?.family_id;
       if (!familyId) return;
 
-      const { data: cats, error } = await supabase
+      const { data: loadedCategories, error: categoriesError } = await supabase
         .from("categories")
         .select("*")
         .or(`family_id.eq.${familyId},is_default.eq.true`)
         .eq("type", type);
-      
-      if (error) {
-        console.error("Erro ao buscar categorias:", error);
+
+      if (categoriesError) {
+        console.error("Erro ao buscar categorias:", categoriesError);
       }
-      
-      const loadedCats = cats || [];
-      setCategories(loadedCats);
-      
-      // Reset categoryId if current selection is not in the new list
-      if (categoryId && loadedCats.length > 0 && !loadedCats.find(c => c.id === categoryId)) {
+
+      const nextCategories = loadedCategories || [];
+      setCategories(nextCategories);
+      if (categoryId && !nextCategories.find((category) => category.id === categoryId)) {
         setCategoryId("");
       }
+
+      const { data: loadedCards, error: cardsError } = await supabase
+        .from("cards")
+        .select("id, name, last_four")
+        .eq("family_id", familyId)
+        .eq("is_active", true)
+        .order("name");
+
+      if (cardsError) {
+        console.error("Erro ao buscar cartoes:", cardsError);
+      }
+
+      setCards(loadedCards || []);
     } catch (err) {
-      console.error("Erro ao buscar categorias:", err);
+      console.error("Erro ao buscar dados:", err);
     }
   };
 
-  const handleAmountChange = (val: string) => {
-    // Allow digits, one comma or dot as decimal separator
-    const cleaned = val.replace(/[^0-9.,]/g, "");
+  const handleAmountChange = (value: string) => {
+    const cleaned = value.replace(/[^0-9.,]/g, "");
     setAmount(cleaned);
-    if (errors.amount) setErrors(prev => ({ ...prev, amount: undefined }));
+    if (errors.amount) setErrors((prev) => ({ ...prev, amount: undefined }));
   };
 
-  const parseAmount = (val: string): number => {
-    if (!val || val.trim() === "") return NaN;
-    // Replace comma with dot for parseFloat
-    const normalized = val.replace(/\./g, "").replace(",", ".");
-    // If no comma was present, try direct parse (user may use dot as decimal)
-    if (!val.includes(",")) {
-      return parseFloat(val.replace(/[^0-9.]/g, ""));
+  const parseAmount = (value: string): number => {
+    if (!value || value.trim() === "") return NaN;
+    const normalized = value.replace(/\./g, "").replace(",", ".");
+    if (!value.includes(",")) {
+      return parseFloat(value.replace(/[^0-9.]/g, ""));
     }
     return parseFloat(normalized);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
     const parsedAmount = parseAmount(amount);
-    
-    const newErrors: { amount?: string; category?: string } = {};
-    
+    const nextErrors: { amount?: string; category?: string; cardId?: string } = {};
+
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      newErrors.amount = "Informe um valor válido";
+      nextErrors.amount = "Informe um valor válido";
     }
-    
-    if (!categoryId || categoryId.trim() === "") {
-      newErrors.category = "Selecione uma categoria";
+
+    if (!categoryId) {
+      nextErrors.category = "Selecione uma categoria";
     }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+
+    if (type === "expense" && paymentType === "credit_card" && !cardId) {
+      nextErrors.cardId = "Selecione um cartão";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
-    
-    setErrors({});
 
+    setErrors({});
     setLoading(true);
+
     try {
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      
+
       if (!profile?.family_id) {
         toast.error("Família não encontrada. Configure seu perfil primeiro.");
         setLoading(false);
         return;
       }
 
-      const { error } = await supabase.from("transactions" as any).insert([{
-        family_id: profile.family_id,
-        user_id: user?.id,
-        amount: parsedAmount,
-        type,
-        description: description || "",
-        category_id: categoryId,
-        date: new Date().toISOString().split("T")[0]
-      }]);
+      const { data, error } = await supabase
+        .from("transactions" as any)
+        .insert([
+          {
+            family_id: profile.family_id,
+            user_id: user?.id,
+            amount: parsedAmount,
+            type,
+            description: description || "",
+            category_id: categoryId,
+            payment_type: type === "expense" ? paymentType : null,
+            card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
+            date: new Date().toISOString().split("T")[0],
+          },
+        ])
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
 
       toast.success("Transação registrada com sucesso!");
       setAmount("");
       setDescription("");
       setCategoryId("");
+      setPaymentType("cash");
+      setCardId("");
       if (onSuccess) onSuccess();
     } catch (err: any) {
       console.error("Erro ao salvar transação:", err);
@@ -143,44 +175,50 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   };
 
   return (
-    <Card className="p-6 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] shadow-2xl animate-in zoom-in-95 duration-500">
-      <div className="flex items-center justify-between mb-6">
+    <Card className="animate-in zoom-in-95 rounded-[2rem] border border-white/[0.05] bg-[#0C0C0E] p-6 shadow-2xl duration-500 sm:rounded-[2.5rem] sm:p-7">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Lançamento Rápido</h3>
-          <div className="flex items-center gap-1 ml-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full text-white/20 hover:text-primary hover:bg-primary/5 transition-all"
+          <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground sm:text-[10px]">Lançamento Rápido</h3>
+          <div className="ml-2 flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-muted-foreground transition-all hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsAIModalOpen(true)}
             >
               <Mic className="h-3.5 w-3.5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full text-white/20 hover:text-primary hover:bg-primary/5 transition-all"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-muted-foreground transition-all hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsAIModalOpen(true)}
             >
               <Paperclip className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
-        <div className="flex bg-white/[0.03] rounded-full p-1">
-          <button 
+        <div className="flex shrink-0 rounded-full bg-white/[0.03] p-1">
+          <button
+            type="button"
             onClick={() => setType("expense")}
             className={cn(
-              "px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all",
-              type === "expense" ? "bg-red-500/10 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]" : "text-white/20 hover:text-white/40"
+              "rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all sm:px-4",
+              type === "expense"
+                ? "bg-red-500/10 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                : "text-muted-foreground hover:text-muted-foreground",
             )}
           >
             Despesa
           </button>
-          <button 
+          <button
+            type="button"
             onClick={() => setType("income")}
             className={cn(
-              "px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all",
-              type === "income" ? "bg-primary/10 text-primary shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "text-white/20 hover:text-white/40"
+              "rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all sm:px-4",
+              type === "income"
+                ? "bg-primary/10 text-primary shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+                : "text-muted-foreground hover:text-muted-foreground",
             )}
           >
             Receita
@@ -188,89 +226,152 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Amount field */}
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        <div className="flex flex-col gap-4 md:flex-row">
           <div className="flex-1 space-y-1">
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold opacity-30">R$</span>
-              <Input 
+              <Input
                 type="text"
                 inputMode="decimal"
                 placeholder="0,00"
                 value={amount}
-                onChange={(e) => handleAmountChange(e.target.value)}
+                onChange={(event) => handleAmountChange(event.target.value)}
                 className={cn(
-                  "pl-12 h-14 rounded-2xl bg-white/[0.02] border text-xl font-bold tracking-tight focus:border-primary/30 transition-all placeholder:text-white/5",
-                  errors.amount ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]"
+                  "h-12 rounded-2xl border bg-white/[0.02] pl-12 text-lg font-black tracking-tight transition-all placeholder:text-white/5 focus:border-primary/30 sm:h-14 sm:text-xl",
+                  errors.amount ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]",
                 )}
               />
             </div>
-            {errors.amount && <p className="text-[10px] font-bold text-red-400 ml-4 uppercase tracking-wider">{errors.amount}</p>}
+            {errors.amount && <p className="ml-4 text-[10px] font-black uppercase tracking-wider text-red-400">{errors.amount}</p>}
           </div>
 
-          {/* Description field */}
           <div className="flex-[1.5] space-y-2">
             <div className="relative">
-              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/10" />
-              <Input 
+              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
                 placeholder="Descrição (ex: Almoço)"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="pl-12 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] font-medium placeholder:text-white/5"
+                onChange={(event) => setDescription(event.target.value)}
+                className="h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-12 text-sm font-black placeholder:text-white/5 sm:h-14"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-          {/* Category Selector */}
-          <div className="flex-1 w-full space-y-1">
-            <Select value={categoryId} onValueChange={(val) => { setCategoryId(val); if (errors.category) setErrors(prev => ({ ...prev, category: undefined })); }}>
-              <SelectTrigger className={cn(
-                "h-14 rounded-2xl bg-white/[0.02] border pl-4",
-                errors.category ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]"
-              )}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end">
+          <div className="w-full flex-1 space-y-1">
+            <Select
+              value={categoryId}
+              onValueChange={(value) => {
+                setCategoryId(value);
+                if (errors.category) setErrors((prev) => ({ ...prev, category: undefined }));
+              }}
+            >
+              <SelectTrigger
+                className={cn(
+                  "h-12 rounded-2xl border bg-white/[0.02] pl-4 font-black transition-all sm:h-14",
+                  errors.category ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]",
+                )}
+              >
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
                 {categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} className="rounded-xl my-1 focus:bg-white/5 transition-colors">
-                      {cat.name}
+                  categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id} className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
+                      {category.name}
                     </SelectItem>
                   ))
                 ) : (
                   <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-white/30 font-medium">Nenhuma categoria encontrada</p>
+                    <p className="text-xs font-medium text-muted-foreground">Nenhuma categoria encontrada</p>
                   </div>
                 )}
               </SelectContent>
             </Select>
-            {errors.category && <p className="text-[10px] font-bold text-red-400 ml-4 uppercase tracking-wider">{errors.category}</p>}
+            {errors.category && <p className="ml-4 text-[10px] font-black uppercase tracking-wider text-red-400">{errors.category}</p>}
           </div>
 
-          {/* Submit Button */}
-          <Button 
-            type="submit" 
+          {type === "expense" && (
+            <div className="w-full flex-1 space-y-1">
+              <Select value={paymentType} onValueChange={(value: "cash" | "credit_card") => setPaymentType(value)}>
+                <SelectTrigger className="h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-4 font-black transition-all sm:h-14">
+                  <SelectValue placeholder="Como foi essa despesa?" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
+                  <SelectItem value="cash" className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
+                    Dinheiro
+                  </SelectItem>
+                  <SelectItem value="credit_card" className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
+                    Cartão de crédito
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <Button
+            type="submit"
             disabled={loading}
             className={cn(
-              "h-14 px-8 rounded-2xl font-bold text-sm uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 shrink-0 w-full md:w-auto",
-              type === 'expense' ? 'bg-white text-black hover:bg-white/90' : 'bg-primary text-white hover:bg-primary/90 shadow-primary/20'
+              "h-12 w-full shrink-0 rounded-2xl px-8 text-xs font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 md:w-auto sm:h-14",
+              type === "expense"
+                ? "bg-red-500/10 text-white shadow-[0_0_15px_rgba(239,68,68,0.12)] hover:bg-red-500/20"
+                : "bg-primary/10 text-white shadow-[0_0_15px_rgba(59,130,246,0.12)] hover:bg-primary/20",
             )}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Plus className="mr-2 h-4 w-4" /> Lançar</>}
           </Button>
         </div>
+
+        {type === "expense" && paymentType === "credit_card" && (
+          <div className="space-y-1">
+            <div className="relative">
+              <CreditCard className="absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Select
+                value={cardId}
+                onValueChange={(value) => {
+                  setCardId(value);
+                  if (errors.cardId) setErrors((prev) => ({ ...prev, cardId: undefined }));
+                }}
+              >
+                <SelectTrigger
+                  className={cn(
+                    "h-12 rounded-2xl border bg-white/[0.02] pl-12 font-black transition-all sm:h-14",
+                    errors.cardId ? "border-red-500/50 bg-red-500/[0.02]" : "border-white/[0.05]",
+                  )}
+                >
+                  <SelectValue placeholder="Selecione o cartão" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
+                  {cards.length > 0 ? (
+                    cards.map((card) => (
+                      <SelectItem key={card.id} value={card.id} className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
+                        {card.name}
+                        {card.last_four ? ` •••• ${card.last_four}` : ""}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-xs font-medium text-muted-foreground">Nenhum cartão ativo encontrado</p>
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            {errors.cardId && <p className="ml-4 text-[10px] font-black uppercase tracking-wider text-red-400">{errors.cardId}</p>}
+          </div>
+        )}
       </form>
 
-      <ImportHistoryModal 
-        open={isAIModalOpen} 
-        onClose={() => setIsAIModalOpen(false)} 
+      <ImportHistoryModal
+        open={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
         onSuccess={() => {
           if (onSuccess) onSuccess();
           setIsAIModalOpen(false);
-        }} 
+        }}
       />
     </Card>
   );

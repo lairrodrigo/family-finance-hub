@@ -86,7 +86,7 @@ const CreateGoal = () => {
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">Nova Meta</h1>
-          <p className="text-sm font-medium text-white/20">Defina seu próximo objetivo financeiro.</p>
+          <p className="text-sm font-medium text-muted-foreground">Defina seu próximo objetivo financeiro.</p>
         </div>
       </div>
 
@@ -94,11 +94,11 @@ const CreateGoal = () => {
         <Card className="p-8 md:p-10 space-y-10 border border-white/[0.05] bg-[#0C0C0E] rounded-[2.5rem] shadow-2xl">
           {/* Goal Name */}
           <div className="space-y-4">
-            <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">
+            <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">
               O que você quer conquistar?
             </Label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-primary transition-colors">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                 <Target className="h-5 w-5" />
               </div>
               <Input
@@ -116,11 +116,11 @@ const CreateGoal = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Target Amount */}
             <div className="space-y-4">
-              <Label htmlFor="amount" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">
+              <Label htmlFor="amount" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">
                 Quanto você precisa?
               </Label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-primary transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                   <DollarSign className="h-5 w-5" />
                 </div>
                 <Input
@@ -138,11 +138,11 @@ const CreateGoal = () => {
 
             {/* Deadline */}
             <div className="space-y-4">
-              <Label htmlFor="deadline" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">
+              <Label htmlFor="deadline" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">
                 Até quando?
               </Label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-primary transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                   <Calendar className="h-5 w-5" />
                 </div>
                 <Input
@@ -159,7 +159,7 @@ const CreateGoal = () => {
 
           {/* Category Selector */}
           <div className="space-y-4">
-            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">
+            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">
               Categoria do objetivo
             </Label>
             <div className="flex flex-wrap gap-2.5">
@@ -173,7 +173,7 @@ const CreateGoal = () => {
                     "px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border",
                     formData.category === cat 
                       ? "bg-primary text-white border-primary shadow-xl shadow-primary/20" 
-                      : "bg-white/5 text-white/40 border-transparent hover:border-white/10 hover:text-white/60"
+                      : "bg-white/5 text-muted-foreground border-transparent hover:border-white/10 hover:text-muted-foreground"
                   )}
                 >
                   {cat}
@@ -187,7 +187,7 @@ const CreateGoal = () => {
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-transform hover:scale-110">
             <Info className="h-5 w-5" />
           </div>
-          <p className="text-xs text-white/30 font-medium leading-relaxed">
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
             Dica: Metas com datas definidas têm <span className="text-primary font-bold">70% mais chances</span> de serem concluídas com sucesso.
           </p>
         </div>
@@ -206,3 +206,5 @@ const CreateGoal = () => {
 };
 
 export default CreateGoal;
+
+

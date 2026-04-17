@@ -22,7 +22,7 @@ const NotFound = () => {
           <h1 className="text-6xl font-black text-white tracking-tighter">404</h1>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-white tracking-tight">Perdido no Espaço?</h2>
-            <p className="text-sm font-medium text-white/20 max-w-[200px] mx-auto leading-relaxed">
+            <p className="text-sm font-medium text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
               Essa página não faz parte do seu ecossistema financeiro.
             </p>
           </div>
@@ -41,3 +41,4 @@ const NotFound = () => {
 };
 
 export default NotFound;
+

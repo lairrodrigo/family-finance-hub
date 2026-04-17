@@ -44,6 +44,7 @@ interface MemberRecord {
 }
 
 interface PendingInvite {
+  created_at?: string;
   id: string;
   email: string;
 }
@@ -65,7 +66,6 @@ const FamilySettings = () => {
   useEffect(() => {
     if (user) {
       void fetchFamilyData();
-      void fetchPendingInvites();
     }
   }, [user]);
 
@@ -75,16 +75,14 @@ const FamilySettings = () => {
 
   const fetchPendingInvites = async () => {
     try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      if (!profile?.family_id) {
+      if (!family?.id || !isAdmin) {
         setPendingInvites([]);
         return;
       }
 
-      const { data, error } = await supabase
-        .from("family_invitations")
-        .select("id, email")
-        .eq("family_id", profile.family_id);
+      const { data, error } = await supabase.rpc("list_family_pending_invitations", {
+        p_family_id: family.id,
+      });
 
       if (error) throw error;
       setPendingInvites(data || []);
@@ -133,7 +131,16 @@ const FamilySettings = () => {
       }));
 
       setMembers(combinedMembers);
-      await fetchPendingInvites();
+      if (isAdmin) {
+        const { data: invitesData, error: invitesError } = await supabase.rpc("list_family_pending_invitations", {
+          p_family_id: profile.family_id,
+        });
+
+        if (invitesError) throw invitesError;
+        setPendingInvites(invitesData || []);
+      } else {
+        setPendingInvites([]);
+      }
     } catch (err) {
       console.error("Erro ao carregar dados da família:", err);
       toast.error("Erro ao sincronizar dados da família.");
@@ -198,9 +205,10 @@ const FamilySettings = () => {
   const handleCancelInvite = async (inviteId: string) => {
     if (!isAdmin) return;
     try {
-      const { data, error } = await supabase.from("family_invitations").delete().eq("id", inviteId).select();
+      const { error } = await supabase.rpc("cancel_family_invitation", {
+        p_invite_id: inviteId,
+      });
       if (error) throw error;
-      if (!data || data.length === 0) throw new Error("Acesso negado: você não possui permissão para esta ação.");
       toast.success("Convite cancelado.");
       await fetchPendingInvites();
     } catch (err: unknown) {
@@ -294,8 +302,8 @@ const FamilySettings = () => {
       }
 
       setInviteEmail("");
-      await fetchFamilyData();
       await fetchPendingInvites();
+      await fetchFamilyData();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erro ao convidar.";
       toast.error("Erro ao convidar: " + message);

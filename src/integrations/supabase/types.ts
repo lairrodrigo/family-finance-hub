@@ -609,6 +609,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      cancel_family_invitation: {
+        Args: {
+          p_invite_id: string
+        }
+        Returns: Json
+      }
       invite_family_member: {
         Args: {
           p_email: string
@@ -616,6 +622,16 @@ export type Database = {
           p_role?: Database["public"]["Enums"]["app_role"]
         }
         Returns: Json
+      }
+      list_family_pending_invitations: {
+        Args: {
+          p_family_id: string
+        }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+        }[]
       }
     }
     Enums: {

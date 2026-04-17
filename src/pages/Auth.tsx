@@ -50,7 +50,7 @@ const Auth = () => {
           <AppLogo size={80} className="hover:scale-110 transition-transform duration-500" />
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold text-white tracking-tight">Divvy Money</h1>
-            <p className="text-sm font-medium text-white/20 uppercase tracking-[0.2em]">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-[0.2em]">
               {isLogin ? "Sua Vida Financeira Unificada" : "Comece sua Jornada"}
             </p>
           </div>
@@ -60,15 +60,15 @@ const Auth = () => {
         <div className="p-10 bg-[#0C0C0E] border border-white/[0.05] rounded-[3rem] shadow-2xl space-y-8 animate-in fade-in zoom-in-95 duration-700">
           <div className="space-y-1">
             <h2 className="text-2xl font-bold text-white tracking-tight">{isLogin ? "Bem-vindo de volta" : "Criar nova conta"}</h2>
-            <p className="text-sm text-white/20 font-medium">Preencha seus dados para continuar</p>
+            <p className="text-sm text-muted-foreground font-medium">Preencha seus dados para continuar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Nome Completo</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Nome Completo</Label>
                 <div className="relative group">
-                  <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors" />
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
                     id="fullName"
                     type="text"
@@ -83,9 +83,9 @@ const Auth = () => {
             )}
             
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Endereço de E-mail</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Endereço de E-mail</Label>
               <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors" />
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="email"
                   type="email"
@@ -99,9 +99,9 @@ const Auth = () => {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 ml-1">Senha Segura</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Senha Segura</Label>
               <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/10 group-focus-within:text-primary transition-colors" />
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="password"
                   type="password"
@@ -125,7 +125,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm font-bold text-white/20 hover:text-white transition-all tracking-tight"
+              className="text-sm font-bold text-muted-foreground hover:text-white transition-all tracking-tight"
             >
               {isLogin ? "Não tem uma conta? " : "Já possui cadastro? "}
               <span className="text-primary hover:underline">{isLogin ? "Cadastre-se grátis" : "Fazer Login"}</span>
@@ -134,7 +134,7 @@ const Auth = () => {
         </div>
 
         {/* Footer Info */}
-        <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10">
+        <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           <span>Premium Fintech Experience</span>
         </div>
@@ -144,3 +144,5 @@ const Auth = () => {
 };
 
 export default Auth;
+
+

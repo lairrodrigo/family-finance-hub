@@ -60,8 +60,11 @@ export const useGoals = () => {
           user_id: user.id,
           family_id: profile.family_id,
         })
-        .select()
-        .single();
+        .select();
+
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
+      return data[0];
 
       if (error) throw error;
       return data;
@@ -77,10 +80,11 @@ export const useGoals = () => {
         .from("goals")
         .update({ current_amount: amount })
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
+      return data[0];
       return data;
     },
     onSuccess: () => {

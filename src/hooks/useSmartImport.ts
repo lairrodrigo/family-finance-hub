@@ -121,17 +121,21 @@ export const useSmartImport = () => {
         };
       });
 
-      const { error: insertError } = await supabase.from('transactions').insert(payload);
+      const { data: trxData, error: insertError } = await supabase.from('transactions').insert(payload).select();
       if (insertError) throw insertError;
+      if (!trxData || trxData.length === 0) throw new Error("Acesso negado: Você não possui permissão para importar transações.");
 
-      await supabase.from('history_entries').insert({
+      const { data: histData, error: histError } = await supabase.from('history_entries').insert({
         user_id: user.id,
         type: 'documento',
         fileName: files.map(f => f.file.name).join(', '),
         processedContent: JSON.stringify(extractedExpenses),
         userMessage: `Importação Inteligente Local (${extractedExpenses.length} itens)`,
         systemResponse: `Origens: ${[...new Set(extractedExpenses.map(e => e.origem))].join(', ')}`
-      });
+      }).select();
+      
+      if (histError) throw histError;
+      if (!histData || histData.length === 0) throw new Error("Acesso negado: Falha ao registrar log de importação.");
 
       toast.success("Gastos importados com sucesso!");
       resetFull();

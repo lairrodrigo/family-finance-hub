@@ -38,14 +38,14 @@ export function AppSidebar() {
           <AppLogo size={40} className="hover:scale-110 transition-transform duration-500" />
           <div className="flex flex-col">
             <span className="text-base font-bold tracking-tight text-white uppercase">Divvy Money</span>
-            <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mt-0.5">Premium Access</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-0.5">Premium Access</span>
           </div>
         </div>
       </SidebarHeader>
       
       <SidebarContent className="px-4 gap-8 pt-6">
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10 mb-4 h-auto">Menu Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {navItems.map(({ to, icon: Icon, label }) => {
@@ -59,11 +59,11 @@ export function AppSidebar() {
                         "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
                         isActive 
                           ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                          : "text-white/40 hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
+                          : "text-muted-foreground hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
                       )}
                     >
                       <NavLink to={to} className="flex items-center gap-4 w-full h-full">
-                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-white/20")} />
+                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-muted-foreground")} />
                         <span className="text-sm font-bold tracking-tight">{label}</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -75,7 +75,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10 mb-4 h-auto">Gestão</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {managementItems.map(({ to, icon: Icon, label }) => {
@@ -89,11 +89,11 @@ export function AppSidebar() {
                         "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
                         isActive 
                           ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                          : "text-white/40 hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
+                          : "text-muted-foreground hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
                       )}
                     >
                       <NavLink to={to} className="flex items-center gap-4 w-full h-full">
-                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-white/20")} />
+                        <Icon className={cn("h-5 w-5 transition-transform group-hover/menu-btn:scale-110", isActive ? "text-primary" : "text-muted-foreground")} />
                         <span className="text-sm font-bold tracking-tight">{label}</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -108,3 +108,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+

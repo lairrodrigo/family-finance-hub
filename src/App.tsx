@@ -40,7 +40,7 @@ function LoadingScreen() {
       <Loader2 className="h-10 w-10 animate-spin text-primary mb-6" />
       {showPrompt && (
         <div className="space-y-4 animate-in fade-in zoom-in duration-500">
-          <p className="text-white/40 text-sm max-w-xs font-medium leading-relaxed">
+          <p className="text-muted-foreground text-sm max-w-xs font-medium leading-relaxed">
             A conexão está demorando mais que o esperado. Verifique sua internet ou as configurações do projeto.
           </p>
           <button 
@@ -116,3 +116,4 @@ const App = () => (
 );
 
 export default App;
+

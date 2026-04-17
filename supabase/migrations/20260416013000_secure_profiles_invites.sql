@@ -98,11 +98,6 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.invite_family_member(UUID, TEXT, public.app_role) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.accept_my_family_invitation() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.invite_family_member(UUID, TEXT, public.app_role) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.accept_my_family_invitation() TO authenticated;
-
 CREATE OR REPLACE FUNCTION public.accept_my_family_invitation()
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -168,3 +163,92 @@ BEGIN
   );
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION public.list_family_pending_invitations(
+  p_family_id UUID
+)
+RETURNS TABLE (
+  id UUID,
+  email TEXT,
+  created_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Não autorizado.';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = auth.uid()
+      AND family_id = p_family_id
+      AND role = 'admin'
+  ) THEN
+    RAISE EXCEPTION 'Apenas administradores podem ver convites pendentes.';
+  END IF;
+
+  RETURN QUERY
+  SELECT family_invitations.id, family_invitations.email, family_invitations.created_at
+  FROM public.family_invitations
+  WHERE family_invitations.family_id = p_family_id
+  ORDER BY family_invitations.created_at DESC;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.cancel_family_invitation(
+  p_invite_id UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_invitation public.family_invitations%ROWTYPE;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Não autorizado.';
+  END IF;
+
+  SELECT *
+  INTO v_invitation
+  FROM public.family_invitations
+  WHERE id = p_invite_id
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Convite não encontrado.';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = auth.uid()
+      AND family_id = v_invitation.family_id
+      AND role = 'admin'
+  ) THEN
+    RAISE EXCEPTION 'Apenas administradores podem cancelar convites.';
+  END IF;
+
+  DELETE FROM public.family_invitations
+  WHERE id = v_invitation.id;
+
+  RETURN jsonb_build_object(
+    'cancelled', true,
+    'invite_id', v_invitation.id
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.invite_family_member(UUID, TEXT, public.app_role) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.accept_my_family_invitation() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.list_family_pending_invitations(UUID) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.cancel_family_invitation(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.invite_family_member(UUID, TEXT, public.app_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.accept_my_family_invitation() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.list_family_pending_invitations(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.cancel_family_invitation(UUID) TO authenticated;

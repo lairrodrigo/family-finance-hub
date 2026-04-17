@@ -15,14 +15,16 @@ export const historyService = {
           systemResponse: entry.systemResponse,
           fileUrl: entry.fileUrl
         }])
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para criar histórico.");
+
+      const result = data[0];
 
       return {
-        ...data,
-        createdAt: new Date(data.createdAt).getTime()
+        ...result,
+        createdAt: new Date(result.createdAt).getTime()
       } as HistoryEntry;
     } catch (error: any) {
       console.error("Error creating history entry:", error);
@@ -52,12 +54,14 @@ export const historyService = {
 
   async deleteHistoryEntry(id: string): Promise<void> {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('history_entries')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para excluir histórico.");
     } catch (error: any) {
       console.error("Error deleting history entry:", error);
       throw new Error("Erro ao deletar histórico. Tente novamente.");

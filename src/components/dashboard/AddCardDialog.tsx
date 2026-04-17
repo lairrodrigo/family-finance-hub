@@ -39,7 +39,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
       if (!profile?.family_id) throw new Error("Família não encontrada");
 
-      const { error } = await supabase.from("cards").insert([{
+      const { data, error } = await supabase.from("cards").insert([{
         user_id: user?.id,
         family_id: profile.family_id,
         name: formData.name,
@@ -49,9 +49,10 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
         due_day: parseInt(formData.due_day),
         closing_day: parseInt(formData.closing_day),
         color: "#1E40AF"
-      }]);
+      }]).select();
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Acesso negado: Você não possui permissão para esta ação.");
 
       toast.success("Cartão adicionado!");
       setFormData({ name: "", brand: "Mastercard", last_four: "", credit_limit: "", due_day: "10", closing_day: "3" });
@@ -74,7 +75,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Identificação / Nome</Label>
+            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Identificação / Nome</Label>
             <Input 
               placeholder="Ex: Inter Black, Nubank..."
               value={formData.name}
@@ -85,7 +86,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Bandeira</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Bandeira</Label>
               <Select value={formData.brand} onValueChange={(v) => setFormData({...formData, brand: v})}>
                 <SelectTrigger className="h-14 rounded-2xl bg-[#111111] border-white/5 font-bold">
                   <SelectValue />
@@ -99,7 +100,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Últimos 4 Dígitos</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Últimos 4 Dígitos</Label>
               <Input 
                 placeholder="0000"
                 maxLength={4}
@@ -111,9 +112,9 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Limite de Crédito</Label>
+            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Limite de Crédito</Label>
             <div className="relative">
-              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#444444]" />
+              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
                 type="number"
                 placeholder="0.00"
@@ -126,7 +127,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Fechamento (Dia)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Fechamento (Dia)</Label>
               <Input 
                 type="number"
                 min="1" max="31"
@@ -136,7 +137,7 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666666] ml-1">Vencimento (Dia)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Vencimento (Dia)</Label>
               <Input 
                 type="number"
                 min="1" max="31"
@@ -162,3 +163,4 @@ export const AddCardDialog = ({ onSuccess, trigger, open, onOpenChange }: AddCar
     </Dialog>
   );
 };
+

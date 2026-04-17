@@ -13,6 +13,7 @@ import { InsightsSection } from "@/components/dashboard/InsightsSection";
 import { QuickAddTransaction } from "@/components/dashboard/QuickAddTransaction";
 import { useGoals } from "@/hooks/useGoals";
 import { Progress } from "@/components/ui/progress";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const HomeGoalsSection = () => {
   const { goals, isLoading } = useGoals();
@@ -51,6 +52,7 @@ const HomeGoalsSection = () => {
 const HomePage = () => {
   const { showValues, toggleShowValues } = useSettings();
   const { user } = useAuth();
+  const { canCreateTransaction, isAdmin, canManageAssets } = usePermissions();
   const navigate = useNavigate();
   
   const [totals, setTotals] = useState({ income: 0, expense: 0 });
@@ -90,11 +92,11 @@ const HomePage = () => {
 
   const fetchDashboardData = async () => {
     try {
+      setLoading(true);
       if (!user) return;
       const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user.id).single();
       if (!profile?.family_id) return;
 
-      // Buscar Transações (mais colunas para a IA)
       const { data: txs, error: txsError } = await supabase
         .from("transactions")
         .select("amount, type, category_id, date")
@@ -110,7 +112,6 @@ const HomePage = () => {
         setTotals({ income, expense });
       }
 
-      // Buscar Categorias para nomes
       const { data: cats, error: catsError } = await supabase
         .from("categories")
         .select("id, name");
@@ -137,60 +138,56 @@ const HomePage = () => {
     <div className="flex flex-col gap-8 pb-8 animate-fade-in">
       <DashboardHeader />
       
-      {/* Dual Experience Layout Engine */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Main Column - Management/Action (8 units on Desktop) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-          {/* Main Balance Card - Master Fintech Premium Version */}
-          <Card className="relative overflow-hidden border border-white/[0.05] bg-gradient-to-br from-[#121212] via-[#080808] to-[#000000] p-9 rounded-[3.5rem] shadow-3xl group">
-            {/* Decorative glow */}
+          <Card className="relative overflow-hidden border border-white/[0.05] bg-gradient-to-br from-[#121212] via-[#080808] to-[#000000] p-7 sm:p-9 rounded-[2.5rem] sm:rounded-[3.5rem] shadow-3xl group transition-all">
             <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-1000" />
             
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Saldo disponível</p>
-              <Button variant="ghost" size="icon" onClick={toggleShowValues} className="h-8 w-8 min-w-0 text-white/20 hover:text-white transition-colors">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">Saldo disponível</p>
+              <Button variant="ghost" size="icon" onClick={toggleShowValues} className="h-8 w-8 min-w-0 text-muted-foreground hover:text-white transition-colors">
                 {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               </Button>
             </div>
             
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-white/30 mr-1">R$</span>
-              <p className="font-display text-6xl font-bold tracking-tighter text-white">
+            <div className="flex items-baseline gap-1 overflow-hidden">
+              <span className="text-xl sm:text-2xl font-bold text-muted-foreground mr-1 shrink-0">R$</span>
+              <p className="font-display text-4xl sm:text-6xl font-black tracking-tighter text-white truncate break-all">
                 {showValues ? balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "••••••"}
               </p>
             </div>
             
-            <div className="mt-14 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-[#111111] flex items-center justify-center text-white/20 border border-white/[0.03] shadow-inner">
-                  <Lock className="h-5 w-5" />
+            <div className="mt-10 sm:mt-14 flex items-center justify-between">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#111111] flex items-center justify-center text-muted-foreground border border-white/[0.03] shadow-inner shrink-0">
+                  <Lock className="h-4 sm:h-5 w-4 sm:w-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-medium uppercase tracking-[0.25em] text-white/20">Comprometido</span>
-                  <span className="text-sm font-bold text-white/80">{showValues ? formatCurrency(0) : "R$ ••••"}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Comprometido</span>
+                  <span className="text-xs sm:text-sm font-bold text-white/80">{showValues ? formatCurrency(0) : "R$ ••••"}</span>
                 </div>
               </div>
               
               <Button 
                 onClick={() => navigate("/history")}
-                className="h-12 px-9 rounded-2xl bg-[#98B9FE] text-black font-bold hover:bg-white shadow-2xl shadow-blue-500/10 transition-all active:scale-95"
+                className="h-11 sm:h-12 px-6 sm:px-9 rounded-2xl bg-[#98B9FE] text-black font-bold hover:bg-white shadow-2xl shadow-blue-500/10 transition-all active:scale-95 text-xs"
               >
                 Detalhes
               </Button>
             </div>
           </Card>
 
-          {/* Quick Add Section — Direct on Home */}
-          <QuickAddTransaction onSuccess={fetchDashboardData} />
+          {/* Somente exibe se puder criar transação */}
+          {canCreateTransaction && (
+            <QuickAddTransaction onSuccess={fetchDashboardData} />
+          )}
 
-          {/* Totals Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <SummaryCard label="Receitas" value={showValues ? formatCurrency(totals.income) : "••••"} type="income" />
             <SummaryCard label="Despesas" value={showValues ? formatCurrency(totals.expense) : "••••"} type="expense" />
           </div>
 
-          {/* Credit Cards Section - Premium Carousel (Fluid full-width of column) */}
           <div className="space-y-6">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xl font-bold text-white tracking-tight">Cartões de crédito</h2>
@@ -200,15 +197,18 @@ const HomePage = () => {
             </div>
             
             <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-hide">
-              <Card 
-                onClick={() => navigate("/cards")}
-                className="min-w-[200px] h-[140px] bg-[#0A0A0B] border-dashed border-2 border-white/5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#111111] hover:border-white/10 transition-all rounded-[1.5rem] group"
-              >
-                <div className="h-10 w-10 rounded-full bg-white/[0.02] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Plus className="h-5 w-5 text-white/20" />
-                </div>
-                <span className="text-[9px] font-medium text-white/20 uppercase tracking-[0.2em]">Adicionar cartão</span>
-              </Card>
+              {/* Somente Admin pode adicionar cartão */}
+              {canManageAssets && (
+                <Card 
+                  onClick={() => navigate("/cards")}
+                  className="min-w-[200px] h-[140px] bg-[#0A0A0B] border-dashed border-2 border-white/5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#111111] hover:border-white/10 transition-all rounded-[1.5rem] group"
+                >
+                  <div className="h-10 w-10 rounded-full bg-white/[0.02] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Plus className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.2em]">Adicionar cartão</span>
+                </Card>
+              )}
               
               {(cards || []).map((card) => (
                 <Card key={card.id} className="min-w-[280px] h-[140px] bg-gradient-to-br from-[#3b82f6] to-[#1e40af] rounded-[1.5rem] p-6 border-none text-white relative flex flex-col justify-between shadow-xl overflow-hidden group">
@@ -232,11 +232,9 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Side Column - Insights & Goals (4 units on Desktop) */}
         <div className="lg:col-span-4 flex flex-col gap-8">
-          {/* AI Insights - Premium Position */}
           <div className="space-y-4">
-            <h2 className="text-sm font-bold text-white/20 uppercase tracking-[0.3em] px-1">Inteligência Financeira</h2>
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-[0.3em] px-1">Divvy IA</h2>
             <InsightsSection 
               transactions={fullTransactions} 
               categories={categories} 
@@ -244,13 +242,14 @@ const HomePage = () => {
             />
           </div>
           
-          {/* Goals Summary - Side Vision */}
           <div className="space-y-6 bg-[#0C0C0E]/50 p-6 rounded-[2.5rem] border border-white/5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white tracking-tight">Metas Ativas</h2>
-              <Button variant="ghost" size="sm" className="text-[10px] font-bold text-primary uppercase" onClick={() => navigate("/metas")}>
-                Gerenciar
-              </Button>
+              {isAdmin && (
+                <Button variant="ghost" size="sm" className="text-[10px] font-bold text-primary uppercase" onClick={() => navigate("/metas")}>
+                  Gerenciar
+                </Button>
+              )}
             </div>
             <HomeGoalsSection />
           </div>
@@ -262,3 +261,6 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
+

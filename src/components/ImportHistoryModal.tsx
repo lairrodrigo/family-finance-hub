@@ -72,16 +72,18 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
 
   const formatDuration = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
-  return (
-    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isReviewing ? "Revisar Dados Extraídos" : "Importação Inteligente"}
+  return (    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent className="sm:max-w-lg max-h-[95dvh] overflow-y-auto p-6 sm:p-10 border border-white/[0.05] bg-[#0C0C0E] text-white">
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-2xl sm:text-3xl font-black tracking-tighter text-white">
+            {isReviewing ? "Revisar" : "Importar"}
           </DialogTitle>
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            {isReviewing ? `${extractedExpenses.length} transações encontradas` : "Fale, envie fotos ou planilhas"}
+          </p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-6">
           
           {/* FASE 1: UPLOAD */}
           {!isReviewing ? (
@@ -89,24 +91,32 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
               {/* Gravador de Voz Rápido */}
               {!isProcessing && (
                 <div className={cn(
-                  "p-4 border rounded-lg flex items-center justify-between transition-colors",
-                  isRecording ? "bg-primary/5 border-primary" : "bg-muted/30"
+                  "p-5 sm:p-6 border rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-between transition-all duration-500",
+                  isRecording ? "bg-primary/10 border-primary/50 shadow-[0_0_30px_rgba(59,130,246,0.15)] scale-[1.02]" : "bg-white/[0.02] border-white/[0.05]"
                 )}>
-                  <div className="flex items-center gap-3">
-                    <Mic className={cn("h-5 w-5", isRecording && "text-primary animate-pulse")} />
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "h-12 w-12 rounded-2xl flex items-center justify-center transition-all",
+                      isRecording ? "bg-primary text-white" : "bg-white/[0.03] text-muted-foreground"
+                    )}>
+                      <Mic className={cn("h-6 w-6", isRecording && "animate-pulse")} />
+                    </div>
                     <div>
-                      <p className="text-sm font-medium">{isRecording ? "Gravando áudio..." : "Gravar Gasto"}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {isRecording ? formatDuration(duration) : (isSpeechSupported ? "Fale: 'Gastei 50 no pão'" : "O áudio será anexado")}
+                      <p className="text-sm font-black text-white">{isRecording ? "Ouvindo você..." : "Gravar Gasto"}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {isRecording ? formatDuration(duration) : (isSpeechSupported ? "Fale naturalmente" : "Anexar áudio")}
                       </p>
                     </div>
                   </div>
                   <Button
                     onClick={isRecording ? handleStopRecording : handleStartRecording}
-                    variant={isRecording ? "destructive" : "secondary"}
-                    size="sm"
+                    variant="ghost"
+                    className={cn(
+                      "h-12 w-12 rounded-2xl p-0 transition-all active:scale-90",
+                      isRecording ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                    )}
                   >
-                    {isRecording ? <Square className="h-4 w-4" /> : "Gravar"}
+                    {isRecording ? <Square className="h-5 w-5 fill-current" /> : <Mic className="h-5 w-5" />}
                   </Button>
                 </div>
               )}
@@ -125,8 +135,8 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
                   <label
                     htmlFor="file-upload-input"
                     className={cn(
-                      "relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer block",
-                      isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/20 hover:border-primary/50"
+                      "relative border-2 border-dashed rounded-[2rem] p-10 text-center transition-all cursor-pointer block group",
+                      isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.03]"
                     )}
                   >
                     <input
@@ -135,26 +145,35 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
                       multiple
                       className="sr-only"
                       onChange={(e) => { if (e.target.files) addFiles(Array.from(e.target.files)); }}
-                      accept=".xlsx,.xls,.csv,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a"
+                      accept=".xlsx,.xls,.cvs,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a"
                     />
-                    <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm">Arraste a <span className="text-primary font-medium">Planilha</span>, Imagem ou PDF</p>
-                    <p className="text-xs text-muted-foreground mt-1">Ou clique para buscar no dispositivo</p>
+                    <div className="h-16 w-16 bg-white/[0.03] rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05] group-hover:scale-110 transition-transform">
+                      <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <p className="text-sm font-black text-white">Planilha ou Comprovante</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5">Arraste aqui ou toque para buscar</p>
                   </label>
                 </div>
               )}
 
               {/* Arquivos Selecionados */}
               {files.length > 0 && !isProcessing && (
-                <div className="space-y-2 pt-2">
+                <div className="space-y-3 pt-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Arquivos prontos ({files.length})</p>
                   {files.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 bg-muted rounded-md text-xs">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate max-w-[250px]">{item.file.name}</span>
-                        {item.transcript && <span className="text-[10px] text-primary italic bg-primary/10 px-1 rounded">Voz Capturada</span>}
+                    <div key={idx} className="flex items-center justify-between p-4 bg-white/[0.03] border border-white/[0.05] rounded-2xl group animate-in slide-in-from-left-2 transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 bg-white/5 rounded-lg flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-white/90 truncate max-w-[180px]">{item.file.name}</span>
+                          {item.transcript && <span className="text-[8px] text-primary font-black uppercase tracking-widest mt-0.5">Captura de Voz</span>}
+                        </div>
                       </div>
-                      <X className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-red-500" onClick={() => removeFile(idx)} />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-red-500/10 hover:text-red-500 text-muted-foreground" onClick={() => removeFile(idx)}>
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -162,20 +181,30 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
 
               {/* Estado de Processamento */}
               {isProcessing && (
-                <div className="space-y-4 py-8 text-center animate-in fade-in duration-300">
-                  <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto" />
-                  <p className="text-sm font-bold">{progressMessage || "Analisando..."}</p>
+                <div className="space-y-6 py-12 text-center animate-in fade-in duration-500">
+                  <div className="relative inline-block">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
+                    <Loader2 className="h-14 w-14 text-primary animate-spin relative" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xl font-black tracking-tight text-white">{progressMessage || "Analisando..."}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Isso pode levar alguns segundos</p>
+                  </div>
                 </div>
               )}
 
               {/* Ações Upload */}
               {!isProcessing && (
-                <div className="flex gap-2 pt-4">
-                  <Button variant="outline" className="flex-1" onClick={handleClose}>
+                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-white/5">
+                  <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-white" onClick={handleClose}>
                     Cancelar
                   </Button>
-                  <Button className="flex-1" onClick={extractData} disabled={files.length === 0}>
-                    Extrair Dados <ArrowRight className="h-4 w-4 ml-2" />
+                  <Button 
+                    className="flex-1 h-14 rounded-2xl bg-white text-black font-black text-[10px] uppercase tracking-widest hover:bg-white/90 shadow-xl shadow-white/5 disabled:opacity-20 active:scale-95 transition-all" 
+                    onClick={extractData} 
+                    disabled={files.length === 0}
+                  >
+                    Analisar <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               )}
@@ -183,83 +212,87 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
           ) : (
             /* FASE 2: REVISÃO DE DADOS */
             <div className="space-y-6">
-              <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-[60dvh] overflow-y-auto pr-2 custom-scrollbar">
                 {extractedExpenses.map((expense, idx) => (
-                  <div key={idx} className="p-4 border rounded-lg bg-card space-y-3 relative">
+                  <div key={idx} className="p-5 sm:p-6 border border-white/5 rounded-[1.75rem] sm:rounded-[2rem] bg-white/[0.01] space-y-5 relative group animate-in slide-in-from-bottom-4 duration-300" style={{ animationDelay: `${idx * 100}ms` }}>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-red-500"
+                      className="absolute top-4 right-4 h-8 w-8 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                       onClick={() => removeExpense(idx)}
                     >
                       <X className="h-4 w-4" />
                     </Button>
                     
                     <div className="flex items-center justify-between">
-                      <div className="text-xs font-bold text-muted-foreground opacity-50 uppercase">
+                      <Badge className="bg-white/5 text-muted-foreground font-black text-[8px] uppercase tracking-widest border-none">
                         Origem: {expense.origem}
-                      </div>
+                      </Badge>
                       
-                      {/* Player de Áudio p/ Apoio Visual se for áudio */}
                       {expense.origem === 'audio' && expense.audioUrl && (
                         <audio 
                           src={expense.audioUrl} 
                           controls 
-                          className="h-6 w-32 scale-90"
+                          className="h-6 w-32 scale-90 opacity-40 hover:opacity-100 transition-opacity"
                         />
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-[10px] uppercase">Data</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Data</Label>
                         <Input 
                           type="date"
                           value={expense.data}
                           onChange={(e) => updateExpense(idx, 'data', e.target.value)}
-                          className="h-8 text-xs"
+                          className="h-12 bg-white/[0.02] border-white/5 rounded-xl font-black text-sm transition-all focus:border-primary/50"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] uppercase">Valor (R$)</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Valor (R$)</Label>
                         <Input 
                           type="number"
                           value={expense.valor}
                           onChange={(e) => updateExpense(idx, 'valor', parseFloat(e.target.value))}
-                          className="h-8 text-xs"
+                          className="h-12 bg-white/[0.02] border-white/5 rounded-xl font-black text-sm transition-all focus:border-primary/50"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-[10px] uppercase">Descrição</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Descrição</Label>
                       <Input 
                         value={expense.descricao}
                         onChange={(e) => updateExpense(idx, 'descricao', e.target.value)}
-                        className="h-8 text-xs"
+                        className="h-12 bg-white/[0.02] border-white/5 rounded-xl font-black text-sm transition-all focus:border-primary/50"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-[10px] uppercase">Categoria Associada</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sugestão de Categoria</Label>
                       <Input 
                         value={expense.categoria}
                         onChange={(e) => updateExpense(idx, 'categoria', e.target.value)}
-                        className="h-8 text-xs"
+                        className="h-12 bg-white/5 border-primary/20 text-primary rounded-xl font-black text-sm transition-all"
                       />
                     </div>
                   </div>
                 ))}
-              </div>
 
-              {extractedExpenses.length === 0 && (
-                <p className="text-center text-sm text-muted-foreground py-4">Nenhum gasto na lista.</p>
-              )}
+                {extractedExpenses.length === 0 && (
+                  <div className="py-20 text-center space-y-4 bg-white/[0.01] border-2 border-dashed border-white/5 rounded-[2rem]">
+                    <div className="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Nenhum dado extraído</p>
+                  </div>
+                )}
+              </div>
               
               {/* Processando salvamento */}
               {isProcessing && (
-                <div className="text-center">
-                  <p className="text-sm font-bold flex items-center justify-center gap-2">
+                <div className="text-center py-4 animate-pulse">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center justify-center gap-3">
                     <Loader2 className="h-4 w-4 animate-spin" /> {progressMessage}
                   </p>
                 </div>
@@ -267,12 +300,16 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
 
               {/* Ações Revisão */}
               {!isProcessing && (
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="flex-1" onClick={handleClose}>
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/5">
+                  <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-white" onClick={handleClose}>
                     Descartar Tudo
                   </Button>
-                  <Button className="flex-1" onClick={handleFinalConfirm} disabled={extractedExpenses.length === 0}>
-                    Confirmar e Salvar
+                  <Button 
+                    className="flex-1 h-14 rounded-2xl bg-white text-black font-black text-[10px] uppercase tracking-widest hover:bg-white/90 shadow-xl shadow-white/5 disabled:opacity-20 active:scale-95 transition-all" 
+                    onClick={handleFinalConfirm} 
+                    disabled={extractedExpenses.length === 0}
+                  >
+                    Salvar no Histórico
                   </Button>
                 </div>
               )}
@@ -283,3 +320,5 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
     </Dialog>
   );
 };
+
+
