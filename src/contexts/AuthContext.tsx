@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   role: 'admin' | 'member' | 'viewer' | null;
   familyId: string | null;
+  profile: { full_name: string | null; avatar_url: string | null } | null;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<'admin' | 'member' | 'viewer' | null>(null);
   const [familyId, setFamilyId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const tryAcceptInvitation = async () => {
@@ -39,9 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Function to load role and family
   const loadUserData = async (userId: string) => {
     try {
-      let { data: profile, error: profileError } = await supabase
+      let { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('family_id')
+        .select('family_id, full_name, avatar_url')
         .eq('user_id', userId)
         .single();
 
@@ -49,12 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw profileError;
       }
 
-      if (!profile?.family_id) {
+      if (!profileData?.family_id) {
         await tryAcceptInvitation();
 
         const profileReload = await supabase
           .from('profiles')
-          .select('family_id')
+          .select('family_id, full_name, avatar_url')
           .eq('user_id', userId)
           .single();
 
@@ -62,11 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw profileReload.error;
         }
 
-        profile = profileReload.data;
+        profileData = profileReload.data;
       }
 
-      const currentFamilyId = profile?.family_id ?? null;
+      const currentFamilyId = profileData?.family_id ?? null;
       setFamilyId(currentFamilyId);
+      setProfile({
+        full_name: profileData?.full_name ?? null,
+        avatar_url: profileData?.avatar_url ?? null
+      });
 
       if (currentFamilyId) {
         const { data: roleData } = await supabase
@@ -116,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             setRole(null);
             setFamilyId(null);
+            setProfile(null);
           }
           
           setLoading(false);
@@ -178,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session, 
       role, 
       familyId, 
+      profile,
       loading, 
       signUp, 
       signIn, 

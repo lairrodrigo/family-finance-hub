@@ -1,44 +1,14 @@
-import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
 export const DashboardHeader = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadProfile = async () => {
-      if (!user?.id) {
-        if (isMounted) setProfile(null);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (isMounted) {
-        setProfile(data ?? null);
-      }
-    };
-
-    void loadProfile();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id]);
-
-  const userName = profile?.full_name || user?.user_metadata?.full_name || "LAIR";
+  const userName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
@@ -68,5 +38,3 @@ export const DashboardHeader = () => {
     </div>
   );
 };
-
-

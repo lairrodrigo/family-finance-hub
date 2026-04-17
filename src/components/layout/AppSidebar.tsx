@@ -1,9 +1,10 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { Home, ArrowLeftRight, Target, MoreHorizontal, Wallet, Users, Settings, ShoppingBag, CreditCard } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, ArrowLeftRight, Target, MoreHorizontal, Wallet, Users, Settings, ShoppingBag, CreditCard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -14,6 +15,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { AppLogo } from "../ui/AppLogo";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { to: "/", icon: Home, label: "Visão Geral" },
@@ -30,6 +33,11 @@ const managementItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { profile, user, signOut } = useAuth();
+
+  const userName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <Sidebar className="border-r border-white/[0.05] bg-[#0C0C0E]">
@@ -104,6 +112,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t border-white/[0.05]">
+        <button 
+          onClick={() => navigate("/settings")}
+          className="flex items-center gap-3 w-full p-3 rounded-2xl hover:bg-white/[0.03] transition-all group active:scale-[0.98]"
+        >
+          <Avatar className="h-10 w-10 border border-primary/20 group-hover:scale-110 transition-transform">
+            <AvatarImage src={profile?.avatar_url ?? undefined} className="object-cover" />
+            <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+              {userInitial}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col text-left min-w-0">
+            <span className="text-sm font-bold text-white truncate">{userName}</span>
+            <span className="text-[10px] font-medium text-muted-foreground truncate">{user?.email}</span>
+          </div>
+        </button>
+      </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

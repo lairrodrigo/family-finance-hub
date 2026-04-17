@@ -129,7 +129,7 @@ const getAvatarUploadErrorMessage = (error: { message?: string; statusCode?: str
 };
 
 const SettingsPage = () => {
-  const { user, signOut, role } = useAuth();
+  const { user, signOut, role, refreshAuth } = useAuth();
   const { showValues, toggleShowValues } = useSettings();
   const navigate = useNavigate();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -225,6 +225,7 @@ const SettingsPage = () => {
       }
 
       setProfile((current) => (current ? { ...current, full_name: editName.trim() } : current));
+      await refreshAuth();
       toast.success("Nome atualizado.");
       setIsEditingName(false);
     } catch (err: any) {
@@ -263,8 +264,9 @@ const SettingsPage = () => {
     setUploadingAvatar(true);
 
     try {
-      const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const filePath = `${user.id}/avatar.${fileExtension}`;
+      // Use the exact path structure requested: avatars/{user_id}
+      // We keep the original file path but the user specifically asked for avatars/{user_id}
+      const filePath = `${user.id}`;
 
       const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, selectedFile, {
         cacheControl: "3600",
@@ -275,16 +277,19 @@ const SettingsPage = () => {
       if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      // Add versioning to bypass cache
       const avatarUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
 
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ avatar_url: avatarUrl })
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .select();
 
       if (profileError) throw profileError;
 
       setProfile((current) => (current ? { ...current, avatar_url: avatarUrl } : current));
+      await refreshAuth();
 
       if (previousPreviewUrl) {
         URL.revokeObjectURL(previousPreviewUrl);
@@ -295,6 +300,36 @@ const SettingsPage = () => {
       URL.revokeObjectURL(localPreviewUrl);
       setAvatarPreviewUrl(previousPreviewUrl ?? null);
       toast.error(getAvatarUploadErrorMessage(err));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user?.id || uploadingAvatar) return;
+
+    setUploadingAvatar(true);
+    try {
+      // 1. Update Profile first
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("user_id", user.id)
+        .select();
+
+      if (profileError) throw profileError;
+
+      // 2. Remove from storage (optional but cleaner)
+      const filePath = `${user.id}`;
+      await supabase.storage.from("avatars").remove([filePath]);
+
+      setProfile((current) => (current ? { ...current, avatar_url: null } : current));
+      setAvatarPreviewUrl(null);
+      await refreshAuth();
+      
+      toast.success("Foto removida.");
+    } catch (err: any) {
+      toast.error("Erro ao remover foto.");
     } finally {
       setUploadingAvatar(false);
     }
@@ -383,26 +418,28 @@ const SettingsPage = () => {
                     onKeyDown={(e) => e.key === "Enter" && void handleSaveName()}
                     disabled={savingName}
                   />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => void handleSaveName()}
-                    disabled={savingName}
-                    className="h-9 w-9 rounded-xl text-green-400 hover:bg-green-500/10"
-                  >
-                    {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setIsEditingName(false);
-                      setEditName(profile?.full_name || "");
-                    }}
-                    className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-white/5"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => void handleSaveName()}
+                      disabled={savingName}
+                      className="h-9 w-9 rounded-xl text-green-400 hover:bg-green-500/10"
+                    >
+                      {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingName(false);
+                        setEditName(profile?.full_name || "");
+                      }}
+                      className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-white/5"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="group flex items-center gap-2">
@@ -418,9 +455,30 @@ const SettingsPage = () => {
                 </div>
               )}
               <p className="mt-0.5 text-xs font-medium text-muted-foreground">{user?.email}</p>
-              <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Clique no avatar para enviar JPG ou PNG até 2MB
-              </p>
+              
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={uploadingAvatar}
+                  className="text-[10px] font-bold uppercase tracking-widest text-primary transition-colors hover:text-primary/80 disabled:opacity-50"
+                >
+                  {uploadingAvatar ? "Enviando..." : "Trocar foto"}
+                </button>
+                {(profile?.avatar_url || avatarPreviewUrl) && (
+                  <>
+                    <div className="h-1 w-1 rounded-full bg-white/10" />
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      disabled={uploadingAvatar}
+                      className="text-[10px] font-bold uppercase tracking-widest text-red-400/70 transition-colors hover:text-red-400 disabled:opacity-50"
+                    >
+                      Remover
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

@@ -448,26 +448,27 @@ const HistoryPage = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <div className="inline-flex h-12 w-full items-center rounded-2xl bg-white text-black shadow-xl shadow-white/5 sm:w-auto">
+            <div className="inline-flex h-12 w-full items-center rounded-2xl border border-white/[0.08] bg-white/[0.03] p-1 backdrop-blur-md shadow-2xl sm:w-auto">
               {canCreateTransaction && (
                 <button
                   type="button"
                   onClick={() => setIsImportModalOpen(true)}
-                  className="inline-flex h-full items-center rounded-l-2xl px-5 text-[10px] font-black uppercase tracking-[0.18em] transition-colors hover:bg-black/[0.04] active:scale-[0.98]"
+                  className="inline-flex h-full items-center rounded-xl px-5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:bg-white/[0.05] active:scale-[0.98]"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="mr-2 h-4 w-4 opacity-50" />
                   Importar
                 </button>
               )}
-              {canCreateTransaction && <span className="text-black/20">|</span>}
+              <div className="mx-1 h-4 w-[1px] bg-white/10" />
               <button
                 type="button"
                 onClick={handleTopExport}
                 className={cn(
-                  "inline-flex h-full items-center px-5 text-[10px] font-black uppercase tracking-[0.18em] transition-colors hover:bg-black/[0.04] active:scale-[0.98]",
-                  canCreateTransaction ? "rounded-r-2xl" : "rounded-2xl",
+                  "inline-flex h-full items-center px-5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:bg-white/[0.05] active:scale-[0.98]",
+                  !canCreateTransaction && "rounded-xl",
                 )}
               >
+                <Download className="mr-2 h-4 w-4 opacity-50" />
                 Exportar
               </button>
             </div>

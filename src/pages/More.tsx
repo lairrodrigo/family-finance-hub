@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Users, CreditCard, Settings, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useNavigate } from "react-router-dom";
 
@@ -12,15 +13,21 @@ const menuItems = [
 ];
 
 const MorePage = () => {
-  const { signOut, user } = useAuth();
+  const { signOut, user, profile } = useAuth();
   const navigate = useNavigate();
+
+  const userName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <div className="animate-fade-in pb-8 max-w-2xl mx-auto px-1">
       <div className="flex flex-col items-center sm:items-start gap-4 mb-12 text-center sm:text-left pt-4">
-        <div className="h-24 w-24 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary shadow-2xl">
-          <span className="text-3xl font-black uppercase">{user?.email?.[0] || "U"}</span>
-        </div>
+        <Avatar className="h-24 w-24 rounded-[2.5rem] border border-primary/20 shadow-2xl">
+          <AvatarImage src={profile?.avatar_url ?? undefined} className="object-cover" />
+          <AvatarFallback className="rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 text-3xl font-black uppercase text-primary">
+            {userInitial}
+          </AvatarFallback>
+        </Avatar>
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-white tracking-tighter">Minha Conta</h1>
           <p className="text-[10px] sm:text-sm font-bold text-muted-foreground uppercase tracking-widest truncate max-w-[250px]">{user?.email}</p>
@@ -63,5 +70,3 @@ const MorePage = () => {
 };
 
 export default MorePage;
-
-
