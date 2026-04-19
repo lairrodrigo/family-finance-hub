@@ -143,17 +143,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        
+
+        // ✅ Libera o loading IMEDIATAMENTE após confirmar a sessão
+        // Os dados do perfil carregam em background sem travar a UI
+        setLoading(false);
+        clearTimeout(safetyTimeout);
+
         if (currentUser) {
-          await loadUserData(currentUser.id);
+          loadUserData(currentUser.id); // fire-and-forget: não bloqueia o render
         }
       } catch (err) {
         console.error("AuthContext: Error during initialization:", err);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-          clearTimeout(safetyTimeout);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
