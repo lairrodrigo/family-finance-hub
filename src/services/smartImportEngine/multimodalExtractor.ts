@@ -1,11 +1,5 @@
 import { ExtractorResult, FileType } from './types';
-import Tesseract from 'tesseract.js';
-import * as pdfjsLib from 'pdfjs-dist';
 import { parseTextToExpense } from './localParserRules';
-
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-}
 
 export const extractMultimodal = async (
   file: File, 
@@ -43,9 +37,7 @@ export const extractMultimodal = async (
       if (onProgress) onProgress("Processando áudio via motor nativo...");
       const text = transcript || "";
       const expense = parseTextToExpense(text, 'audio');
-      
       expense.audioUrl = audioUrl;
-      
       return { expenses: [expense] };
     }
 
@@ -56,12 +48,17 @@ export const extractMultimodal = async (
   }
 };
 
+// Lazy-loaded: Tesseract só é baixado quando o usuário faz OCR de uma imagem
 const scanImageLocal = async (file: File, onProgress?: (m: string) => void): Promise<string> => {
+  const Tesseract = (await import('tesseract.js')).default;
+
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     Tesseract.recognize(url, 'por', {
       logger: m => {
-        if (m.status === 'recognizing text' && onProgress) onProgress(`Escaneando: ${Math.round(m.progress * 100)}% concluído...`);
+        if (m.status === 'recognizing text' && onProgress) {
+          onProgress(`Escaneando: ${Math.round(m.progress * 100)}% concluído...`);
+        }
       }
     }).then(({ data: { text } }) => {
       URL.revokeObjectURL(url);
@@ -73,7 +70,11 @@ const scanImageLocal = async (file: File, onProgress?: (m: string) => void): Pro
   });
 };
 
+// Lazy-loaded: pdfjs-dist só é baixado quando o usuário importa um PDF
 const extractPdfTextLocal = async (file: File, onProgress?: (m: string) => void): Promise<string> => {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   let fullText = '';
