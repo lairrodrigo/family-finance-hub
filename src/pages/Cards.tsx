@@ -39,7 +39,7 @@ const Cards = () => {
         
         {canManageAssets && (
           <AddCardDialog 
-            onSuccess={fetchCards} 
+            onSuccess={handleFetchCards} 
             trigger={
               <Button className="h-12 px-5 sm:px-6 rounded-2xl bg-white text-black font-black text-[10px] sm:text-base uppercase tracking-widest sm:capitalize sm:tracking-normal hover:bg-white/90 shadow-xl shadow-white/5 gap-2 transition-all active:scale-95">
                 <Plus className="h-4 w-4 sm:h-5 sm:w-5" /> Adicionar
