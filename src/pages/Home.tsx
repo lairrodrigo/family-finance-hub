@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Plus, Eye, EyeOff, Lock, ChevronRight, CreditCard, Target } from "lucide-react";
+import { Plus, Eye, EyeOff, Lock, ChevronRight, CreditCard, Target, Loader2 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -84,7 +84,7 @@ const HomePage = () => {
   const { data: categories, isLoading: catsLoading } = useCategories();
   const { data: cards, isLoading: cardsLoading } = useCards();
 
-  const loading = txsLoading || catsLoading || cardsLoading || authLoading;
+  const loading = txsLoading || catsLoading || cardsLoading;
 
   const { totals, balance } = useMemo(() => {
     const income = (fullTransactions || [])

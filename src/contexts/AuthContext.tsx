@@ -40,9 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Function to load role and family
   const loadUserData = async (userId: string) => {
-    console.log("AuthContext: [DIAGNOSTIC] Iniciando carga de dados para o usuário:", userId);
     try {
-      // Step 1: Fetch profile
       let { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('family_id, full_name, avatar_url')
@@ -69,13 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      console.log("AuthContext: [DIAGNOSTIC] Dados brutos do perfil:", profileData);
-
       let currentFamilyId = profileData?.family_id ?? null;
       
       // AUTO-REPAIR: If family_id is null in profile, check if user has entries in user_roles
       if (!currentFamilyId && userId) {
-        console.log("AuthContext: [DIAGNOSTIC] family_id nulo no perfil. Verificando fallback em user_roles...");
         const { data: roleFallback, error: fallbackError } = await supabase
           .from('user_roles')
           .select('family_id')
@@ -87,21 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (roleFallback?.family_id) {
-          console.log("AuthContext: [DIAGNOSTIC] Encontrado family_id no fallback (user_roles):", roleFallback.family_id);
+          console.log("[AuthContext] Auto-repair: vinculando profile ao family_id encontrado em user_roles:", roleFallback.family_id);
           currentFamilyId = roleFallback.family_id;
-          
-          // Silently update profile to repair the link
           await supabase
             .from('profiles')
             .update({ family_id: currentFamilyId })
             .eq('user_id', userId);
-        } else {
-          console.log("AuthContext: [DIAGNOSTIC] Fallback também não encontrou family_id.");
         }
       }
 
-      console.log("AuthContext: [DIAGNOSTIC] Estado Final -> FamilyID:", currentFamilyId);
-      
+
       setFamilyId(currentFamilyId);
       setProfile({
         full_name: profileData?.full_name ?? null,
@@ -122,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         const rawRole = roleData?.role;
         const normalizedRole = rawRole === 'standard' ? 'member' : rawRole ?? null;
-        console.log("AuthContext: [DIAGNOSTIC] Papel normalizado:", normalizedRole);
         setRole(normalizedRole as 'admin' | 'member' | 'viewer' | null);
       } else {
         setRole(null);
@@ -179,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         
-        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
           await loadUserData(currentUser.id);
         } else if (event === 'SIGNED_OUT') {
           setRole(null);

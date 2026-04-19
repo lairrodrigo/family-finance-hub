@@ -1,17 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { Plus, CreditCard, ChevronLeft, Loader2, Calendar, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { usePermissions } from "@/hooks/usePermissions";
 import { AddCardDialog } from "@/components/dashboard/AddCardDialog";
 import { useCards } from "@/hooks/useCards";
-import { fetchCards } from "../services/cards";
 
 const Cards = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { canManageAssets } = usePermissions();
   const { data: cards = [], isLoading: loading, refetch } = useCards();
 

@@ -27,7 +27,14 @@ const More = lazy(() => import("./pages/More"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes globally
+      retry: 1,
+    },
+  },
+});
 
 function LoadingScreen() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -64,7 +71,7 @@ const PageLoader = () => (
 );
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, familyId } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
