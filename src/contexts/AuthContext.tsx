@@ -38,86 +38,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Function to load role and family
+  // Otimizado: roda queries em paralelo para reduzir latência
   const loadUserData = async (userId: string) => {
     try {
-      let { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('family_id, full_name, avatar_url')
-        .eq('user_id', userId)
-        .single();
+      // Busca perfil e roles em PARALELO (uma só roundtrip de rede cada)
+      const [profileResult, rolesResult] = await Promise.all([
+        supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).single(),
+        supabase.from('user_roles').select('family_id, role').eq('user_id', userId).maybeSingle()
+      ]);
 
-      if (profileError) {
-        console.error("AuthContext: [DIAGNOSTIC] Erro ao carregar perfil:", profileError);
-        if (profileError.code === 'PGRST116') {
-          console.warn("AuthContext: Perfil não encontrado. Tentando aceitar convite...");
-          await tryAcceptInvitation();
-          
-          const retry = await supabase
-            .from('profiles')
-            .select('family_id, full_name, avatar_url')
-            .eq('user_id', userId)
-            .single();
-            
-          if (retry.error) {
-            console.error("AuthContext: Perfil ainda não encontrado após re-tentativa:", retry.error);
-          } else {
-            profileData = retry.data;
-          }
-        }
+      let profileData = profileResult.data;
+
+      // Perfil não encontrado → tenta aceitar convite pendente
+      if (profileResult.error?.code === 'PGRST116') {
+        await tryAcceptInvitation();
+        const retry = await supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).single();
+        if (!retry.error) profileData = retry.data;
       }
 
-      let currentFamilyId = profileData?.family_id ?? null;
-      
-      // AUTO-REPAIR: If family_id is null in profile, check if user has entries in user_roles
-      if (!currentFamilyId && userId) {
-        const { data: roleFallback, error: fallbackError } = await supabase
-          .from('user_roles')
-          .select('family_id')
-          .eq('user_id', userId)
-          .maybeSingle();
-        
-        if (fallbackError) {
-          console.error("AuthContext: [DIAGNOSTIC] Erro no fallback de user_roles:", fallbackError);
-        }
+      // family_id vem do perfil; fallback para user_roles se estiver nulo
+      let currentFamilyId = profileData?.family_id ?? rolesResult.data?.family_id ?? null;
 
-        if (roleFallback?.family_id) {
-          console.log("[AuthContext] Auto-repair: vinculando profile ao family_id encontrado em user_roles:", roleFallback.family_id);
-          currentFamilyId = roleFallback.family_id;
-          await supabase
-            .from('profiles')
-            .update({ family_id: currentFamilyId })
-            .eq('user_id', userId);
-        }
+      // Auto-repair: sincroniza o perfil se o vínculo estava quebrado
+      if (!profileData?.family_id && currentFamilyId) {
+        console.log('[AuthContext] Auto-repair: corrigindo family_id no perfil.');
+        supabase.from('profiles').update({ family_id: currentFamilyId }).eq('user_id', userId);
       }
 
+      const rawRole = rolesResult.data?.role;
+      const normalizedRole = rawRole === 'standard' ? 'member' : (rawRole as 'admin' | 'member' | 'viewer' | null) ?? null;
 
       setFamilyId(currentFamilyId);
-      setProfile({
-        full_name: profileData?.full_name ?? null,
-        avatar_url: profileData?.avatar_url ?? null
-      });
-
-      if (currentFamilyId) {
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-          .eq('family_id', currentFamilyId)
-          .maybeSingle();
-
-        if (roleError) {
-          console.error("AuthContext: [DIAGNOSTIC] Erro ao carregar papel (role):", roleError);
-        }
-        
-        const rawRole = roleData?.role;
-        const normalizedRole = rawRole === 'standard' ? 'member' : rawRole ?? null;
-        setRole(normalizedRole as 'admin' | 'member' | 'viewer' | null);
-      } else {
-        setRole(null);
-      }
+      setProfile({ full_name: profileData?.full_name ?? null, avatar_url: profileData?.avatar_url ?? null });
+      setRole(currentFamilyId ? normalizedRole : null);
     } catch (err) {
-      console.error("AuthContext: [DIAGNOSTIC] ERRO CRÍTICO em loadUserData:", err);
+      console.error('[AuthContext] Erro em loadUserData:', err);
     }
   };
 
@@ -133,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("AuthContext: Initialization safety timeout reached.");
         setLoading(false);
       }
-    }, 10000);
+    }, 30000); // 30s para conexões lentas (ex: Vercel cold start)
 
     const initializeAuth = async () => {
       try {
@@ -143,18 +98,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-
-        // ✅ Libera o loading IMEDIATAMENTE após confirmar a sessão
-        // Os dados do perfil carregam em background sem travar a UI
-        setLoading(false);
-        clearTimeout(safetyTimeout);
-
+        
         if (currentUser) {
-          loadUserData(currentUser.id); // fire-and-forget: não bloqueia o render
+          await loadUserData(currentUser.id);
         }
       } catch (err) {
         console.error("AuthContext: Error during initialization:", err);
-        if (mounted) setLoading(false);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          clearTimeout(safetyTimeout);
+        }
       }
     };
 
@@ -169,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         
-        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+        if (currentUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           await loadUserData(currentUser.id);
         } else if (event === 'SIGNED_OUT') {
           setRole(null);
