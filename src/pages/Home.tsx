@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
-import { Plus, Eye, EyeOff, Lock, ChevronRight, CreditCard, Target, Wallet } from "lucide-react";
+import { useMemo } from "react";
+import { Plus, Eye, EyeOff, Lock, ChevronRight, CreditCard, Target } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { SummaryCard } from "@/components/dashboard/SummaryCard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { InsightsSection } from "@/components/dashboard/InsightsSection";
@@ -14,6 +12,9 @@ import { QuickAddTransaction } from "@/components/dashboard/QuickAddTransaction"
 import { useGoals } from "@/hooks/useGoals";
 import { Progress } from "@/components/ui/progress";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useCategories } from "@/hooks/useCategories";
+import { useCards } from "@/hooks/useCards";
 
 const HomeGoalsSection = () => {
   const { goals, isLoading } = useGoals();
@@ -49,99 +50,77 @@ const HomeGoalsSection = () => {
   );
 };
 
+const NoFamilyBanner = () => {
+  const navigate = useNavigate();
+  return (
+    <Card className="p-6 border border-primary/20 bg-primary/5 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
+      <div className="flex items-center gap-4 text-center sm:text-left">
+        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <Plus className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="text-sm font-black text-white uppercase tracking-wider">Crie seu Espaço Familiar</h3>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Para começar a lançar gastos, você precisa de um workspace.</p>
+        </div>
+      </div>
+      <Button 
+        onClick={() => navigate("/family")}
+        className="h-12 px-8 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-white/90 transition-all shadow-xl shadow-white/5 whitespace-nowrap"
+      >
+        Configurar Agora
+      </Button>
+    </Card>
+  );
+};
+
 const HomePage = () => {
   const { showValues, toggleShowValues } = useSettings();
-  const { user, familyId } = useAuth();
-  const { canCreateTransaction, isAdmin, canManageAssets } = usePermissions();
+  const { familyId, loading: authLoading } = useAuth();
+  const { isAdmin, canManageAssets, canCreateTransaction } = usePermissions();
   const navigate = useNavigate();
   
-  const [totals, setTotals] = useState({ income: 0, expense: 0 });
-  const [fullTransactions, setFullTransactions] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [cards, setCards] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Optimized Global Hooks (React Query)
+  const { data: fullTransactions, isLoading: txsLoading, refetch: refetchTransactions } = useTransactions();
+  const { data: categories, isLoading: catsLoading } = useCategories();
+  const { data: cards, isLoading: cardsLoading } = useCards();
 
-  useEffect(() => {
-    if (user && familyId) {
-      console.log("HomePage: Starting data fetch for family", familyId);
-      const startTime = performance.now();
-      
-      Promise.all([
-        fetchDashboardData(familyId),
-        fetchCards(familyId)
-      ]).then(() => {
-        const duration = performance.now() - startTime;
-        console.log(`HomePage: Data loaded in ${duration.toFixed(2)}ms`);
-      });
-    } else if (user && !familyId) {
-      console.warn("HomePage: User logged in but no familyId found yet.");
-    }
-  }, [user, familyId]);
+  const loading = txsLoading || catsLoading || cardsLoading || authLoading;
 
-  const fetchCards = async (currentFamilyId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("cards")
-        .select("*")
-        .eq("family_id", currentFamilyId)
-        .order("created_at", { ascending: false });
+  const { totals, balance } = useMemo(() => {
+    const income = (fullTransactions || [])
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    
+    const expense = (fullTransactions || [])
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      if (error) {
-        console.error("HomePage: Error fetching cards:", error);
-      } else if (data) {
-        setCards(data);
-      }
-    } catch (err) {
-      console.error("HomePage: Critical error in fetchCards:", err);
-    }
-  };
-
-  const fetchDashboardData = async (currentFamilyId: string) => {
-    try {
-      setLoading(true);
-      
-      const [txsResponse, catsResponse] = await Promise.all([
-        supabase
-          .from("transactions")
-          .select("amount, type, category_id, date")
-          .eq("family_id", currentFamilyId)
-          .order("date", { ascending: false }),
-        supabase
-          .from("categories")
-          .select("id, name")
-      ]);
-
-      if (txsResponse.error) {
-        console.error("HomePage: Error fetching transactions:", txsResponse.error);
-      } else if (txsResponse.data) {
-        const txs = txsResponse.data;
-        setFullTransactions(txs);
-        const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
-        const expense = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
-        setTotals({ income, expense });
-      }
-
-      if (catsResponse.error) {
-        console.error("HomePage: Error fetching categories:", catsResponse.error);
-      } else if (catsResponse.data) {
-        setCategories(catsResponse.data);
-      }
-    } catch (err) {
-      console.error("HomePage: Critical error in fetchDashboardData:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const balance = totals.income - totals.expense;
+    return {
+      totals: { income, expense },
+      balance: income - expense
+    };
+  }, [fullTransactions]);
 
   const formatCurrency = (val: number) => {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  if (authLoading && !familyId) {
+    return (
+      <div className="flex flex-col gap-8 pb-8 animate-fade-in">
+        <DashboardHeader />
+        <div className="flex h-[40vh] items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 pb-8 animate-fade-in">
       <DashboardHeader />
+      
+      {!familyId && !authLoading && <NoFamilyBanner />}
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
@@ -185,7 +164,7 @@ const HomePage = () => {
 
           {/* Somente exibe se puder criar transação */}
           {canCreateTransaction && (
-            <QuickAddTransaction onSuccess={fetchDashboardData} />
+            <QuickAddTransaction onSuccess={() => refetchTransactions()} />
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

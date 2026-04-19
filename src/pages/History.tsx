@@ -43,6 +43,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePermissions } from "@/hooks/usePermissions";
 
+import { useTransactions } from "@/hooks/useTransactions";
+import { useCategories } from "@/hooks/useCategories";
+import { useFamilyProfiles } from "@/hooks/useFamilyProfiles";
+
 const ICON_MAP: Record<string, any> = {
   utensils: Utensils,
   car: Car,
@@ -74,6 +78,11 @@ interface Transaction {
   category_color?: string;
   payment_type?: "cash" | "credit_card" | null;
   user_id: string;
+  categories?: {
+    name: string;
+    icon: string;
+    color: string;
+  };
 }
 
 interface GroupedPeriod {
@@ -98,11 +107,7 @@ const HistoryPage = () => {
   const { user } = useAuth();
   const { canEditTransaction, canCreateTransaction } = usePermissions();
 
-  const [loading, setLoading] = useState(true);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [profiles, setProfiles] = useState<Record<string, ProfileSummary>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedView, setSelectedView] = useState<"monthly" | "annual">("monthly");
@@ -111,111 +116,23 @@ const HistoryPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      void fetchData();
-    }
-  }, [user]);
+  // Optimized Hooks
+  const { data: rawTransactions, isLoading: txsLoading, refetch: refetchTransactions } = useTransactions({ year: selectedYear });
+  const { data: categoriesData, isLoading: catsLoading } = useCategories();
+  const { data: profiles = {}, isLoading: profilesLoading } = useFamilyProfiles();
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([fetchTransactions(), fetchCategories(), fetchProfiles()]);
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao carregar dados do histórico.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = txsLoading || catsLoading || profilesLoading;
 
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("id, name").order("name");
-    if (data) setCategories(data);
-  };
+  const categories = categoriesData || [];
 
-  const fetchProfiles = async () => {
-    try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      if (!profile?.family_id) return;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, email")
-        .eq("family_id", profile.family_id);
-
-      if (error) throw error;
-
-      const mappedProfiles = (data || []).reduce<Record<string, ProfileSummary>>((accumulator, item) => {
-        accumulator[item.user_id] = item;
-        return accumulator;
-      }, {});
-
-      setProfiles(mappedProfiles);
-    } catch (err) {
-      console.error("Profiles fetch error:", err);
-    }
-  };
-
-  const fetchTransactions = async () => {
-    try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      if (!profile?.family_id) return;
-
-      const { data, error } = await supabase
-        .from("transactions")
-        .select(
-          `
-          *,
-          categories:category_id (name, icon, color)
-        `,
-        )
-        .eq("family_id", profile.family_id)
-        .order("date", { ascending: false });
-
-      if (error) throw error;
-
-      const cardIds = Array.from(
-        new Set((data || []).map((transaction: any) => transaction.card_id).filter(Boolean)),
-      ) as string[];
-
-      let cardsById: Record<string, { name: string | null; last_four: string | null }> = {};
-
-      if (cardIds.length > 0) {
-        const { data: cardsData, error: cardsError } = await supabase
-          .from("cards")
-          .select("id, name, last_four")
-          .eq("family_id", profile.family_id)
-          .in("id", cardIds);
-
-        if (cardsError) throw cardsError;
-
-        cardsById = (cardsData || []).reduce<Record<string, { name: string | null; last_four: string | null }>>(
-          (accumulator, card) => {
-            accumulator[card.id] = {
-              name: card.name || null,
-              last_four: card.last_four || null,
-            };
-            return accumulator;
-          },
-          {},
-        );
-      }
-
-      const formatted = (data || []).map((transaction: any) => ({
-        ...transaction,
-        card_last_four: transaction.card_id ? cardsById[transaction.card_id]?.last_four || null : null,
-        card_name: transaction.card_id ? cardsById[transaction.card_id]?.name || null : null,
-        category_name: transaction.categories?.name || "Sem categoria",
-        category_icon: transaction.categories?.icon || "ellipsis",
-        category_color: transaction.categories?.color || "#C0C0C0",
-      }));
-
-      setTransactions(formatted);
-    } catch (err: any) {
-      console.error("Transactions fetch error:", err);
-    }
-  };
+  const transactions = useMemo(() => {
+    return (rawTransactions || []).map((tx: any) => ({
+      ...tx,
+      category_name: tx.categories?.name || "Sem categoria",
+      category_icon: tx.categories?.icon || "ellipsis",
+      category_color: tx.categories?.color || "#C0C0C0",
+    }));
+  }, [rawTransactions]);
 
   const handleDeleteTransaction = async (id: string, ownerId: string) => {
     if (!canEditTransaction(ownerId)) {
@@ -235,7 +152,7 @@ const HistoryPage = () => {
         throw new Error("Acesso negado: você não possui permissão para esta ação.");
       }
 
-      setTransactions((current) => current.filter((transactionItem) => transactionItem.id !== id));
+      await refetchTransactions();
       toast.success("Transação excluída.");
     } catch (err: any) {
       toast.error(err.message || "Erro ao excluir.");
@@ -265,8 +182,7 @@ const HistoryPage = () => {
         throw new Error("Acesso negado: você não possui permissão para esta ação.");
       }
 
-      const deletedIds = new Set(data.map((item) => item.id));
-      setTransactions((current) => current.filter((transaction) => !deletedIds.has(transaction.id)));
+      await refetchTransactions();
       toast.success(`${data.length} transaç${data.length === 1 ? "ão removida" : "ões removidas"} com sucesso.`);
     } catch (err: any) {
       toast.error(err.message || "Erro ao excluir período.");
@@ -722,16 +638,12 @@ const HistoryPage = () => {
         </div>
       </div>
 
-      <ImportHistoryModal open={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onSuccess={fetchData} />
+      <ImportHistoryModal open={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onSuccess={() => refetchTransactions()} />
       <EditTransactionModal
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSuccess={(deletedId) => {
-          if (deletedId) {
-            setTransactions((current) => current.filter((transaction) => transaction.id !== deletedId));
-          } else {
-            void fetchTransactions();
-          }
+        onSuccess={async () => {
+          await refetchTransactions();
         }}
         transaction={selectedTransaction}
       />

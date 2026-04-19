@@ -40,8 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Function to load role and family
   const loadUserData = async (userId: string) => {
-    console.log("AuthContext: Loading data for user", userId);
+    console.log("AuthContext: [DIAGNOSTIC] Iniciando carga de dados para o usuário:", userId);
     try {
+      // Step 1: Fetch profile
       let { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('family_id, full_name, avatar_url')
@@ -49,11 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (profileError) {
+        console.error("AuthContext: [DIAGNOSTIC] Erro ao carregar perfil:", profileError);
         if (profileError.code === 'PGRST116') {
-          console.warn("AuthContext: Profile not found for user. Attempting to accept invitation or wait for trigger...");
+          console.warn("AuthContext: Perfil não encontrado. Tentando aceitar convite...");
           await tryAcceptInvitation();
           
-          // Retry loading profile once after attempting to accept invitation
           const retry = await supabase
             .from('profiles')
             .select('family_id, full_name, avatar_url')
@@ -61,18 +62,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .single();
             
           if (retry.error) {
-            console.error("AuthContext: Profile still not found after retry:", retry.error);
-            // Don't throw, just let it be null so the app can handle it
+            console.error("AuthContext: Perfil ainda não encontrado após re-tentativa:", retry.error);
           } else {
             profileData = retry.data;
           }
-        } else {
-          throw profileError;
         }
       }
 
-      const currentFamilyId = profileData?.family_id ?? null;
-      console.log("AuthContext: User data loaded. Family:", currentFamilyId, "Role info next...");
+      console.log("AuthContext: [DIAGNOSTIC] Dados brutos do perfil:", profileData);
+
+      let currentFamilyId = profileData?.family_id ?? null;
+      
+      // AUTO-REPAIR: If family_id is null in profile, check if user has entries in user_roles
+      if (!currentFamilyId && userId) {
+        console.log("AuthContext: [DIAGNOSTIC] family_id nulo no perfil. Verificando fallback em user_roles...");
+        const { data: roleFallback, error: fallbackError } = await supabase
+          .from('user_roles')
+          .select('family_id')
+          .eq('user_id', userId)
+          .maybeSingle();
+        
+        if (fallbackError) {
+          console.error("AuthContext: [DIAGNOSTIC] Erro no fallback de user_roles:", fallbackError);
+        }
+
+        if (roleFallback?.family_id) {
+          console.log("AuthContext: [DIAGNOSTIC] Encontrado family_id no fallback (user_roles):", roleFallback.family_id);
+          currentFamilyId = roleFallback.family_id;
+          
+          // Silently update profile to repair the link
+          await supabase
+            .from('profiles')
+            .update({ family_id: currentFamilyId })
+            .eq('user_id', userId);
+        } else {
+          console.log("AuthContext: [DIAGNOSTIC] Fallback também não encontrou family_id.");
+        }
+      }
+
+      console.log("AuthContext: [DIAGNOSTIC] Estado Final -> FamilyID:", currentFamilyId);
       
       setFamilyId(currentFamilyId);
       setProfile({
@@ -88,17 +116,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('family_id', currentFamilyId)
           .maybeSingle();
 
-        if (roleError) console.error("AuthContext: Error loading role:", roleError);
+        if (roleError) {
+          console.error("AuthContext: [DIAGNOSTIC] Erro ao carregar papel (role):", roleError);
+        }
         
         const rawRole = roleData?.role;
         const normalizedRole = rawRole === 'standard' ? 'member' : rawRole ?? null;
-        console.log("AuthContext: Logic complete. Role:", normalizedRole);
+        console.log("AuthContext: [DIAGNOSTIC] Papel normalizado:", normalizedRole);
         setRole(normalizedRole as 'admin' | 'member' | 'viewer' | null);
       } else {
         setRole(null);
       }
     } catch (err) {
-      console.error("AuthContext: Critical error in loadUserData:", err);
+      console.error("AuthContext: [DIAGNOSTIC] ERRO CRÍTICO em loadUserData:", err);
     }
   };
 

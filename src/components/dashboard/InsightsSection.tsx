@@ -115,9 +115,6 @@ const InsightMiniCard = ({ insight }: { insight: Insight }) => {
 };
 
 export const InsightsSection = ({ transactions, categories, isLoading }: InsightsSectionProps) => {
-  const spendingGuide = calculateSpendingGuide(transactions);
-  const insights = generateInsights(transactions, categories);
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -127,6 +124,12 @@ export const InsightsSection = ({ transactions, categories, isLoading }: Insight
       </div>
     );
   }
+
+  const safeTransactions = transactions || [];
+  const safeCategories = categories || [];
+
+  const spendingGuide = calculateSpendingGuide(safeTransactions);
+  const insights = generateInsights(safeTransactions, safeCategories);
 
   return (
     <div className="space-y-4">

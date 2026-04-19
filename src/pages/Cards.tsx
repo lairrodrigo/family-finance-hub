@@ -1,46 +1,22 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, CreditCard, ChevronLeft, Loader2, Save, Calendar, Shield } from "lucide-react";
+import { Plus, CreditCard, ChevronLeft, Loader2, Calendar, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/usePermissions";
 import { AddCardDialog } from "@/components/dashboard/AddCardDialog";
+import { useCards } from "@/hooks/useCards";
+import { fetchCards } from "../services/cards";
 
 const Cards = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canManageAssets } = usePermissions();
-  const [cards, setCards] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cards = [], isLoading: loading, refetch } = useCards();
 
-  useEffect(() => {
-    if (user) fetchCards();
-  }, [user]);
-
-  const fetchCards = async () => {
-    try {
-      const { data: profile } = await supabase.from("profiles").select("family_id").eq("user_id", user?.id).single();
-      if (!profile?.family_id) return;
-
-      const { data, error } = await supabase
-        .from("cards")
-        .select("*")
-        .eq("family_id", profile.family_id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setCards(data || []);
-    } catch (err) {
-      toast.error("Erro ao carregar cartões");
-    } finally {
-      setLoading(false);
-    }
+  const handleFetchCards = async () => {
+    await refetch();
   };
 
   return (
@@ -105,7 +81,7 @@ const Cards = () => {
           <div className="space-y-2"><h2 className="text-white font-black text-xl tracking-tight">Nenhum cartão</h2><p className="text-muted-foreground font-medium text-sm max-w-xs mx-auto">Adicione seu primeiro cartão para gerenciar limites e faturas da família.</p></div>
           {canManageAssets && (
             <AddCardDialog 
-              onSuccess={fetchCards} 
+              onSuccess={handleFetchCards} 
               trigger={
                 <Button className="h-14 px-10 rounded-2xl bg-white text-black font-black text-[11px] uppercase tracking-widest hover:bg-white/90 transition-all shadow-2xl shadow-white/5 active:scale-95">Adicionar meu primeiro</Button>
               }

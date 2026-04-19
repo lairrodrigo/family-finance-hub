@@ -9,18 +9,23 @@ export const DashboardHeader = () => {
   const navigate = useNavigate();
 
   const userName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
-  const userInitial = userName.charAt(0).toUpperCase();
+  const userInitial = userName.trim().charAt(0).toUpperCase();
 
   return (
     <div className="flex items-center justify-between w-full py-4 px-1">
       <div className="flex items-center gap-4">
-        <Avatar className="h-11 w-11 border border-white/5 ring-4 ring-white/[0.02]">
-          <AvatarImage src={profile?.avatar_url ?? undefined} />
-          <AvatarFallback className="bg-[#111111] text-muted-foreground font-bold">{userInitial}</AvatarFallback>
+        <Avatar className="h-11 w-11 border border-white/5 ring-4 ring-white/[0.02] shadow-2xl">
+          <AvatarImage src={profile?.avatar_url ?? undefined} className="object-cover" />
+          <AvatarFallback className="bg-gradient-to-br from-[#111111] to-[#050505] text-muted-foreground font-black text-xs">
+            {userInitial}
+          </AvatarFallback>
         </Avatar>
         <div className="flex flex-col gap-0.5">
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Bem-vindo(a),</p>
-          <h1 className="text-sm font-bold text-white uppercase tracking-wider">{userName}!</h1>
+          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] opacity-60">Bem-vindo(a),</p>
+          <h1 className="text-sm font-black text-white uppercase tracking-wider truncate max-w-[180px]">
+            {userName}
+            {!profile?.full_name && !user?.user_metadata?.full_name && "!" ? "" : "!"}
+          </h1>
         </div>
       </div>
 

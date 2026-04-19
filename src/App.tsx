@@ -6,24 +6,26 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Loader2 } from "lucide-react";
-import Auth from "./pages/Auth";
-import Home from "./pages/Home";
-import Transactions from "./pages/Transactions";
-import AddTransaction from "./pages/AddTransaction";
-import History from "./pages/History";
-import Budgets from "./pages/Budgets";
-import Metas from "./pages/Metas";
-import CreateGoal from "./pages/CreateGoal";
-import FamilySettings from "./pages/FamilySettings";
-import Shopping from "./pages/Shopping";
-import ShoppingListDetail from "./pages/ShoppingListDetail";
-import Cards from "./pages/Cards";
-import More from "./pages/More";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+
+// Lazy loading pages for better performance
+const Auth = lazy(() => import("./pages/Auth"));
+const Home = lazy(() => import("./pages/Home"));
+const Transactions = lazy(() => import("./pages/Transactions"));
+const AddTransaction = lazy(() => import("./pages/AddTransaction"));
+const History = lazy(() => import("./pages/History"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const Metas = lazy(() => import("./pages/Metas"));
+const CreateGoal = lazy(() => import("./pages/CreateGoal"));
+const FamilySettings = lazy(() => import("./pages/FamilySettings"));
+const Shopping = lazy(() => import("./pages/Shopping"));
+const ShoppingListDetail = lazy(() => import("./pages/ShoppingListDetail"));
+const Cards = lazy(() => import("./pages/Cards"));
+const More = lazy(() => import("./pages/More"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -55,8 +57,14 @@ function LoadingScreen() {
   );
 }
 
+const PageLoader = () => (
+  <div className="flex h-[50vh] items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+  </div>
+);
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, familyId } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
@@ -91,23 +99,25 @@ const App = () => (
       <BrowserRouter>
         <SettingsProvider>
           <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
-              <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-              <Route path="/add" element={<ProtectedRoute><AddTransaction /></ProtectedRoute>} />
-              <Route path="/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
-              <Route path="/metas" element={<ProtectedRoute><Metas /></ProtectedRoute>} />
-              <Route path="/metas/new" element={<ProtectedRoute><CreateGoal /></ProtectedRoute>} />
-              <Route path="/shopping" element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
-              <Route path="/shopping/:id" element={<ProtectedRoute><ShoppingListDetail /></ProtectedRoute>} />
-              <Route path="/cards" element={<ProtectedRoute><Cards /></ProtectedRoute>} />
-              <Route path="/family" element={<ProtectedRoute><FamilySettings /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+                <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+                <Route path="/add" element={<ProtectedRoute><AddTransaction /></ProtectedRoute>} />
+                <Route path="/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
+                <Route path="/metas" element={<ProtectedRoute><Metas /></ProtectedRoute>} />
+                <Route path="/metas/new" element={<ProtectedRoute><CreateGoal /></ProtectedRoute>} />
+                <Route path="/shopping" element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
+                <Route path="/shopping/:id" element={<ProtectedRoute><ShoppingListDetail /></ProtectedRoute>} />
+                <Route path="/cards" element={<ProtectedRoute><Cards /></ProtectedRoute>} />
+                <Route path="/family" element={<ProtectedRoute><FamilySettings /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
+                <Route path="*" element={<Suspense fallback={<Loader2 className="animate-spin h-8 w-8 m-auto" />}><NotFound /></Suspense>} />
+              </Routes>
+            </Suspense>
           </AuthProvider>
         </SettingsProvider>
       </BrowserRouter>
