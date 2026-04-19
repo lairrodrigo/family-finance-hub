@@ -75,7 +75,7 @@ const NoFamilyBanner = () => {
 
 const HomePage = () => {
   const { showValues, toggleShowValues } = useSettings();
-  const { familyId, loading: authLoading } = useAuth();
+  const { familyId, loading: authLoading, profileLoading } = useAuth();
   const { isAdmin, canManageAssets, canCreateTransaction } = usePermissions();
   const navigate = useNavigate();
   
@@ -105,7 +105,8 @@ const HomePage = () => {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
-  if (authLoading && !familyId) {
+  // Show spinner while profile data is loading (not the full loading screen)
+  if (profileLoading) {
     return (
       <div className="flex flex-col gap-8 pb-8 animate-fade-in">
         <DashboardHeader />
@@ -120,7 +121,7 @@ const HomePage = () => {
     <div className="flex flex-col gap-8 pb-8 animate-fade-in">
       <DashboardHeader />
       
-      {!familyId && !authLoading && <NoFamilyBanner />}
+      {!familyId && !profileLoading && <NoFamilyBanner />}
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
