@@ -45,16 +45,35 @@ function LoadingScreen() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center">
-      <Loader2 className="h-10 w-10 animate-spin text-primary mb-6" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center animate-fade-in">
+      <div className="relative mb-12">
+        {/* Glow effect behind logo */}
+        <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
+        
+        <div className="relative h-24 w-24 sm:h-32 sm:w-32 animate-in zoom-in-75 duration-700 ease-out">
+          <img 
+            src="/icon-512.png" 
+            alt="Divvy Money" 
+            className="h-full w-full object-contain filter drop-shadow-2xl"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
+        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground/50 animate-pulse">
+          Carregando Workspace
+        </span>
+      </div>
+
       {showPrompt && (
-        <div className="space-y-4 animate-in fade-in zoom-in duration-500">
-          <p className="text-muted-foreground text-sm max-w-xs font-medium leading-relaxed">
-            A conexão está demorando mais que o esperado. Verifique sua internet ou as configurações do projeto.
+        <div className="mt-12 space-y-4 animate-in fade-in zoom-in duration-500">
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest max-w-xs leading-relaxed opacity-60">
+            A conexão está demorando mais que o esperado.
           </p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-colors"
+            className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
           >
             Tentar Novamente
           </button>

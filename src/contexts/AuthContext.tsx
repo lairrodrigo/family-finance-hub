@@ -139,6 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Safety timeout: ensure loading is released after 3s even if Supabase hangs
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 3000);
+
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -149,8 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser);
 
         if (event === 'SIGNED_IN') {
-          // On explicit sign-in, load profile (await so Home has data immediately)
-          if (currentUser) await loadUserData(currentUser.id);
+          // On explicit sign-in, load profile in background
+          if (currentUser) loadUserData(currentUser.id);
           setLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && currentUser) {
           // Refresh silently in background
