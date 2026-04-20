@@ -21,10 +21,10 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
 // Helper: wraps a promise with a timeout so Supabase queries never hang indefinitely
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: any): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback as T), ms)),
   ]);
 }
 
