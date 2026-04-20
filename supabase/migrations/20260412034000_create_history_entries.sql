@@ -3,6 +3,7 @@
 CREATE TABLE IF NOT EXISTS public.history_entries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    family_id UUID REFERENCES public.families(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('planilha', 'documento', 'imagem', 'audio')),
     "fileName" TEXT NOT NULL,
     "processedContent" TEXT NOT NULL,

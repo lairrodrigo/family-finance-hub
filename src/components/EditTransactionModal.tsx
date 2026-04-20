@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpCircle, ArrowDownCircle, Loader2, Trash2, CreditCard } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Loader2, Trash2, CreditCard, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ interface Transaction {
   category_id: string;
   payment_type?: "cash" | "credit_card" | null;
   card_id?: string | null;
+  goal_id?: string | null;
 }
 
 interface EditTransactionModalProps {
@@ -51,6 +52,8 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
   const [type, setType] = useState<"income" | "expense">("expense");
   const [paymentType, setPaymentType] = useState<"cash" | "credit_card">("cash");
   const [cardId, setCardId] = useState("");
+  const [goalId, setGoalId] = useState("");
+  const [allGoals, setAllGoals] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     void fetchOptions();
@@ -65,6 +68,7 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
       setType(transaction.type);
       setPaymentType(transaction.payment_type === "credit_card" ? "credit_card" : "cash");
       setCardId(transaction.card_id || "");
+      setGoalId(transaction.goal_id || "");
     }
   }, [transaction]);
 
@@ -82,13 +86,15 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
   }, [paymentType]);
 
   const fetchOptions = async () => {
-    const [{ data: loadedCategories }, { data: loadedCards }] = await Promise.all([
+    const [{ data: loadedCategories }, { data: loadedCards }, { data: loadedGoals }] = await Promise.all([
       supabase.from("categories").select("id, name").order("name"),
       supabase.from("cards").select("id, name, last_four").eq("is_active", true).order("name"),
+      supabase.from("goals").select("id, name").eq("is_completed", false).order("name"),
     ]);
 
     if (loadedCategories) setCategories(loadedCategories);
     if (loadedCards) setCards(loadedCards);
+    if (loadedGoals) setAllGoals(loadedGoals);
   };
 
   const handleSave = async () => {
@@ -109,6 +115,7 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
           type,
           payment_type: type === "expense" ? paymentType : null,
           card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
+          goal_id: type === "income" && goalId ? goalId : null,
         })
         .eq("id", transaction.id)
         .select();
@@ -251,6 +258,33 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
               </SelectContent>
             </Select>
           </div>
+
+          {type === "income" && (
+            <div className="space-y-2">
+              <Label className="ml-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Vincular a Meta</Label>
+              <div className="relative">
+                <Target className="absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Select value={goalId} onValueChange={setGoalId}>
+                  <SelectTrigger className="h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-12 font-black shadow-none transition-all focus:ring-primary/20">
+                    <SelectValue placeholder="Opcional" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] text-white shadow-3xl">
+                    {allGoals.length > 0 ? (
+                      allGoals.map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id} className="my-1 rounded-xl text-xs font-black focus:bg-white/5">
+                          {goal.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled className="py-4 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Nenhuma meta ativa encontrada
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
 
           {type === "expense" && (
             <div className="space-y-2">

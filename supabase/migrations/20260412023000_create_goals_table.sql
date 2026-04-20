@@ -23,11 +23,13 @@ CREATE TRIGGER update_goals_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- RLS POLICIES - GOALS
+DROP POLICY IF EXISTS "Users can view family goals" ON public.goals;
 CREATE POLICY "Users can view family goals"
   ON public.goals FOR SELECT
   TO authenticated
   USING (family_id = public.get_user_family_id(auth.uid()));
 
+DROP POLICY IF EXISTS "Users can create goals for their family" ON public.goals;
 CREATE POLICY "Users can create goals for their family"
   ON public.goals FOR INSERT
   TO authenticated
@@ -36,11 +38,13 @@ CREATE POLICY "Users can create goals for their family"
     AND family_id = public.get_user_family_id(auth.uid())
   );
 
+DROP POLICY IF EXISTS "Users can update their own goals" ON public.goals;
 CREATE POLICY "Users can update their own goals"
   ON public.goals FOR UPDATE
   TO authenticated
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users can delete their own goals" ON public.goals;
 CREATE POLICY "Users can delete their own goals"
   ON public.goals FOR DELETE
   TO authenticated
@@ -54,16 +58,19 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 -- FAMILIES POLICIES
 DROP POLICY IF EXISTS "master_create_families" ON public.families;
 DROP POLICY IF EXISTS "Authenticated users can create families" ON public.families;
+DROP POLICY IF EXISTS "Users can create their own family" ON public.families;
 CREATE POLICY "Users can create their own family"
   ON public.families FOR INSERT
   TO authenticated
   WITH CHECK (created_by = auth.uid());
 
+DROP POLICY IF EXISTS "Users can view their own family" ON public.families;
 CREATE POLICY "Users can view their own family"
   ON public.families FOR SELECT
   TO authenticated
   USING (id = public.get_user_family_id(auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can update their family" ON public.families;
 CREATE POLICY "Admins can update their family"
   ON public.families FOR UPDATE
   TO authenticated
@@ -84,6 +91,7 @@ CREATE POLICY "Admins can manage roles"
     )
   );
 
+DROP POLICY IF EXISTS "Users can view roles in their family" ON public.user_roles;
 CREATE POLICY "Users can view roles in their family"
   ON public.user_roles FOR SELECT
   TO authenticated

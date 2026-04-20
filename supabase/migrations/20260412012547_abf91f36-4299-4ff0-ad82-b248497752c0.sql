@@ -1,6 +1,6 @@
 
 -- 1. ROLE ENUM
-CREATE TYPE public.app_role AS ENUM ('admin', 'standard');
+CREATE TYPE public.app_role AS ENUM ('admin', 'standard', 'member', 'viewer');
 
 -- 2. FAMILIES TABLE
 CREATE TABLE public.families (
