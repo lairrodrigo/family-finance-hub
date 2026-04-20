@@ -12,6 +12,7 @@ import {
   Banknote,
   LayoutGrid,
   CreditCard,
+  Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ const AddTransactionPage = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [cards, setCards] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
 
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -47,6 +49,7 @@ const AddTransactionPage = () => {
   const [accountId, setAccountId] = useState("");
   const [paymentType, setPaymentType] = useState<"cash" | "credit_card">("cash");
   const [cardId, setCardId] = useState("");
+  const [goalId, setGoalId] = useState<string>("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState<{ amount?: string; category?: string; cardId?: string }>({});
 
@@ -70,6 +73,9 @@ const AddTransactionPage = () => {
       setPaymentType("cash");
       setCardId("");
       setErrors((prev) => ({ ...prev, cardId: undefined }));
+    } else {
+      // Despesa não pode ser vinculada a meta
+      setGoalId("");
     }
   }, [type]);
 
@@ -91,10 +97,11 @@ const AddTransactionPage = () => {
         return;
       }
 
-      const [{ data: loadedCategories, error: categoriesError }, { data: loadedAccounts }, { data: loadedCards }] = await Promise.all([
+      const [{ data: loadedCategories, error: categoriesError }, { data: loadedAccounts }, { data: loadedCards }, { data: loadedGoals }] = await Promise.all([
         supabase.from("categories").select("*").or(`family_id.eq.${familyId},is_default.eq.true`).eq("type", type),
         supabase.from("accounts").select("*").eq("family_id", familyId),
         supabase.from("cards").select("id, name, last_four").eq("family_id", familyId).eq("is_active", true).order("name"),
+        supabase.from("goals").select("id, name, target_amount, current_amount").eq("family_id", familyId).eq("is_completed", false).order("name"),
       ]);
 
       if (categoriesError) {
@@ -109,6 +116,7 @@ const AddTransactionPage = () => {
 
       setAccounts(loadedAccounts || []);
       setCards(loadedCards || []);
+      setGoals(loadedGoals || []);
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
     }
@@ -211,6 +219,7 @@ const AddTransactionPage = () => {
             account_id: accountId || null,
             payment_type: type === "expense" ? paymentType : null,
             card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
+            goal_id: type === "income" && goalId ? goalId : null,
             date,
           } as any,
         ])
@@ -504,6 +513,33 @@ const AddTransactionPage = () => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {type === "income" && goals.length > 0 && (
+            <div className="space-y-4">
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Vincular a uma meta (opcional)</Label>
+              <div className="group relative">
+                <Target className="absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Select value={goalId || "none"} onValueChange={(v) => setGoalId(v === "none" ? "" : v)}>
+                  <SelectTrigger className="h-16 rounded-2xl border-white/[0.05] bg-white/[0.02] pl-14 font-bold text-white focus-visible:ring-primary/20">
+                    <SelectValue placeholder="Nenhuma meta" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-white/[0.05] bg-[#0C0C0E] font-bold text-white">
+                    <SelectItem value="none" className="my-1 rounded-xl transition-colors focus:bg-white/5">
+                      Nenhuma
+                    </SelectItem>
+                    {goals.map((goal) => (
+                      <SelectItem key={goal.id} value={goal.id} className="my-1 rounded-xl transition-colors focus:bg-white/5">
+                        {goal.name} — R$ {Number(goal.current_amount).toLocaleString("pt-BR")} / R$ {Number(goal.target_amount).toLocaleString("pt-BR")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-2 ml-1 text-[10px] font-medium text-muted-foreground">
+                  O valor desta receita será somado ao progresso da meta automaticamente.
+                </p>
+              </div>
             </div>
           )}
 
