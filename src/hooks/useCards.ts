@@ -8,6 +8,8 @@ export interface Card {
   last_four: string | null;
   brand: string | null;
   credit_limit: number | null;
+  closing_day: number | null;
+  due_day: number | null;
   color: string | null;
   family_id: string;
   is_active: boolean;

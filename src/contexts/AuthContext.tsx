@@ -21,10 +21,10 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
 // Helper: wraps a promise with a timeout so Supabase queries never hang indefinitely
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: any): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback as T), ms)),
   ]);
 }
 
@@ -53,28 +53,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const TIMEOUT_MS = 8000;
       const [profileResult, rolesResult] = await Promise.all([
         withTimeout(
-          supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).single(),
+          Promise.resolve(supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).maybeSingle()),
           TIMEOUT_MS,
-          { data: null, error: { message: 'timeout', code: 'TIMEOUT' } }
+          { data: null, error: { message: 'timeout', code: 'TIMEOUT' } as any }
         ),
         withTimeout(
-          supabase.from('user_roles').select('family_id, role').eq('user_id', userId).limit(1).maybeSingle(),
+          Promise.resolve(supabase.from('user_roles').select('family_id, role').eq('user_id', userId).limit(1).maybeSingle()),
           TIMEOUT_MS,
-          { data: null, error: { message: 'timeout', code: 'TIMEOUT' } }
+          { data: null, error: { message: 'timeout', code: 'TIMEOUT' } as any }
         ),
       ]);
 
-      let profileData = profileResult.data;
+      let profileData: any = profileResult.data;
 
       // Profile not found → try accepting pending invitation
-      if (profileResult.error?.code === 'PGRST116') {
+      if (!profileData) {
         await tryAcceptInvitation();
         const retry = await withTimeout(
-          supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).single(),
+          Promise.resolve(supabase.from('profiles').select('family_id, full_name, avatar_url').eq('user_id', userId).maybeSingle()),
           TIMEOUT_MS,
-          { data: null, error: null }
+          { data: null, error: null as any }
         );
-        if (!retry.error) profileData = retry.data;
+        if (retry.data) profileData = retry.data;
+      }
+
+      // Prefer family_id from user_roles when there's a mismatch (roles is source of truth for membership)
+      if (rolesResult.data?.family_id && profileData?.family_id && rolesResult.data.family_id !== profileData.family_id) {
+        console.warn('[AuthContext] family_id mismatch detected, syncing profile to roles');
+        supabase.from('profiles').update({ family_id: rolesResult.data.family_id }).eq('user_id', userId);
+        profileData.family_id = rolesResult.data.family_id;
       }
 
       // family_id: prefer profile, fallback to user_roles
