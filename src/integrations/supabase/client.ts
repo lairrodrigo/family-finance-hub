@@ -17,7 +17,9 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 export const supabase = createClient<Database>(SUPABASE_URL || "", SUPABASE_PUBLISHABLE_KEY || "", {
   auth: {
     storage: localStorage,
+    storageKey: "ffh-original-recovery-v1", // Chave única para forçar reset de cache em todos os dispositivos
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
   }
 });
