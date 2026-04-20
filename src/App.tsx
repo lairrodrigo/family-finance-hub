@@ -40,12 +40,13 @@ function LoadingScreen() {
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
+    console.log("[LoadingScreen] Montado. Aguardando inicialização...");
     const timer = setTimeout(() => setShowPrompt(true), 4000);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center animate-fade-in">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center">
       <div className="relative mb-12">
         {/* Glow effect behind logo */}
         <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
@@ -62,7 +63,7 @@ function LoadingScreen() {
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
         <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground/50 animate-pulse">
-          Carregando Workspace
+          Sincronizando Workspace
         </span>
       </div>
 
@@ -72,7 +73,10 @@ function LoadingScreen() {
             A conexão está demorando mais que o esperado.
           </p>
           <button 
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              console.log("[LoadingScreen] Reiniciando via botão de emergência...");
+              window.location.reload();
+            }}
             className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
           >
             Tentar Novamente
