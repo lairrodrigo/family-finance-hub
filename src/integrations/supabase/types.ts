@@ -525,6 +525,7 @@ export type Database = {
           date: string
           description: string | null
           family_id: string
+          goal_id: string | null
           id: string
           payment_type: string | null
           type: string
@@ -540,6 +541,7 @@ export type Database = {
           date?: string
           description?: string | null
           family_id: string
+          goal_id?: string | null
           id?: string
           payment_type?: string | null
           type: string
@@ -555,6 +557,7 @@ export type Database = {
           date?: string
           description?: string | null
           family_id?: string
+          goal_id?: string | null
           id?: string
           payment_type?: string | null
           type?: string
@@ -587,6 +590,13 @@ export type Database = {
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
         ]
