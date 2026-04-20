@@ -12,6 +12,7 @@ import {
   Banknote,
   LayoutGrid,
   CreditCard,
+  Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -512,6 +513,33 @@ const AddTransactionPage = () => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {type === "income" && goals.length > 0 && (
+            <div className="space-y-4">
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Vincular a uma meta (opcional)</Label>
+              <div className="group relative">
+                <Target className="absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Select value={goalId || "none"} onValueChange={(v) => setGoalId(v === "none" ? "" : v)}>
+                  <SelectTrigger className="h-16 rounded-2xl border-white/[0.05] bg-white/[0.02] pl-14 font-bold text-white focus-visible:ring-primary/20">
+                    <SelectValue placeholder="Nenhuma meta" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-white/[0.05] bg-[#0C0C0E] font-bold text-white">
+                    <SelectItem value="none" className="my-1 rounded-xl transition-colors focus:bg-white/5">
+                      Nenhuma
+                    </SelectItem>
+                    {goals.map((goal) => (
+                      <SelectItem key={goal.id} value={goal.id} className="my-1 rounded-xl transition-colors focus:bg-white/5">
+                        {goal.name} — R$ {Number(goal.current_amount).toLocaleString("pt-BR")} / R$ {Number(goal.target_amount).toLocaleString("pt-BR")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-2 ml-1 text-[10px] font-medium text-muted-foreground">
+                  O valor desta receita será somado ao progresso da meta automaticamente.
+                </p>
+              </div>
             </div>
           )}
 
