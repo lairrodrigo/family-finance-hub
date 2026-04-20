@@ -39,6 +39,7 @@ const AddTransactionPage = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [cards, setCards] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
 
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -47,6 +48,7 @@ const AddTransactionPage = () => {
   const [accountId, setAccountId] = useState("");
   const [paymentType, setPaymentType] = useState<"cash" | "credit_card">("cash");
   const [cardId, setCardId] = useState("");
+  const [goalId, setGoalId] = useState<string>("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState<{ amount?: string; category?: string; cardId?: string }>({});
 
@@ -70,6 +72,9 @@ const AddTransactionPage = () => {
       setPaymentType("cash");
       setCardId("");
       setErrors((prev) => ({ ...prev, cardId: undefined }));
+    } else {
+      // Despesa não pode ser vinculada a meta
+      setGoalId("");
     }
   }, [type]);
 
@@ -91,10 +96,11 @@ const AddTransactionPage = () => {
         return;
       }
 
-      const [{ data: loadedCategories, error: categoriesError }, { data: loadedAccounts }, { data: loadedCards }] = await Promise.all([
+      const [{ data: loadedCategories, error: categoriesError }, { data: loadedAccounts }, { data: loadedCards }, { data: loadedGoals }] = await Promise.all([
         supabase.from("categories").select("*").or(`family_id.eq.${familyId},is_default.eq.true`).eq("type", type),
         supabase.from("accounts").select("*").eq("family_id", familyId),
         supabase.from("cards").select("id, name, last_four").eq("family_id", familyId).eq("is_active", true).order("name"),
+        supabase.from("goals").select("id, name, target_amount, current_amount").eq("family_id", familyId).eq("is_completed", false).order("name"),
       ]);
 
       if (categoriesError) {
@@ -109,6 +115,7 @@ const AddTransactionPage = () => {
 
       setAccounts(loadedAccounts || []);
       setCards(loadedCards || []);
+      setGoals(loadedGoals || []);
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
     }
@@ -211,6 +218,7 @@ const AddTransactionPage = () => {
             account_id: accountId || null,
             payment_type: type === "expense" ? paymentType : null,
             card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
+            goal_id: type === "income" && goalId ? goalId : null,
             date,
           } as any,
         ])
