@@ -1,23 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/(assets|icon|pwa|splash|apple-touch-icon|favicon|manifest.json).*",
-      "destination": "/$0"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
     }
   ]
 }
