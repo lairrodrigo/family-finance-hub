@@ -1,6 +1,13 @@
-﻿
+
 -- 1. ROLE ENUM
-CREATE TYPE public.app_role AS ENUM ('admin', 'standard');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN
+        CREATE TYPE public.app_role AS ENUM ('admin', 'standard', 'member', 'viewer');
+    END IF;
+END $$;
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'standard';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'member';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'viewer';
 
 -- 2. FAMILIES TABLE
 CREATE TABLE public.families (
@@ -34,6 +41,58 @@ CREATE TABLE public.user_roles (
   UNIQUE(user_id, family_id)
 );
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+-- 4.5. FAMILY INVITATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.family_invitations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    role public.app_role NOT NULL DEFAULT 'member',
+    invited_by UUID NOT NULL REFERENCES auth.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(family_id, email)
+);
+ALTER TABLE public.family_invitations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins veem convites da familia" ON public.family_invitations;
+CREATE POLICY "Admins veem convites da familia" ON public.family_invitations
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.user_roles 
+            WHERE user_roles.family_id = family_invitations.family_id 
+            AND user_roles.user_id = auth.uid() 
+            AND user_roles.role = 'admin'
+        )
+    );
+
+DROP POLICY IF EXISTS "Admins criam convites" ON public.family_invitations;
+CREATE POLICY "Admins criam convites" ON public.family_invitations
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.user_roles 
+            WHERE user_roles.family_id = family_id 
+            AND user_roles.user_id = auth.uid() 
+            AND user_roles.role = 'admin'
+        )
+    );
+
+DROP POLICY IF EXISTS "Admins cancelam convites" ON public.family_invitations;
+CREATE POLICY "Admins cancelam convites" ON public.family_invitations
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.user_roles 
+            WHERE user_roles.family_id = family_invitations.family_id 
+            AND user_roles.user_id = auth.uid() 
+            AND user_roles.role = 'admin'
+        )
+    );
+
+DROP POLICY IF EXISTS "Usuarios veem seus proprios convites" ON public.family_invitations;
+CREATE POLICY "Usuarios veem seus proprios convites" ON public.family_invitations
+    FOR SELECT USING (
+        email = (SELECT email FROM auth.users WHERE id = auth.uid()) OR
+        email = (SELECT email FROM profiles WHERE user_id = auth.uid())
+    );
 
 -- 5. SECURITY DEFINER: has_role
 CREATE OR REPLACE FUNCTION public.has_role(_user_id UUID, _family_id UUID, _role app_role)
@@ -427,6 +486,7 @@ CREATE POLICY "Users can view their own family"
   TO authenticated
   USING (id = public.get_user_family_id(auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can update their family" ON public.families;
 CREATE POLICY "Admins can update their family"
   ON public.families FOR UPDATE
   TO authenticated
@@ -447,6 +507,7 @@ CREATE POLICY "Admins can manage roles"
     )
   );
 
+DROP POLICY IF EXISTS "Users can view roles in their family" ON public.user_roles;
 CREATE POLICY "Users can view roles in their family"
   ON public.user_roles FOR SELECT
   TO authenticated
@@ -719,28 +780,28 @@ CREATE POLICY "Admins can delete any family goal"
   USING (public.has_role(auth.uid(), family_id, 'admin'));
 
 -- 5. History Entries
-CREATE POLICY "Admins can delete any family history entry"
-  ON public.history_entries FOR DELETE
-  TO authenticated
-  USING (public.has_role(auth.uid(), family_id, 'admin'));
+-- CREATE POLICY "Admins can delete any family history entry"
+--   ON public.history_entries FOR DELETE
+--   TO authenticated
+--   USING (public.has_role(auth.uid(), family_id, 'admin'));
 
 -- 6. Shopping Lists
-CREATE POLICY "Admins can delete any family shopping list"
-  ON public.shopping_lists FOR DELETE
-  TO authenticated
-  USING (public.has_role(auth.uid(), family_id, 'admin'));
+-- CREATE POLICY "Admins can delete any family shopping list"
+--   ON public.shopping_lists FOR DELETE
+--   TO authenticated
+--   USING (public.has_role(auth.uid(), family_id, 'admin'));
 
 -- 7. Shopping List Items (cascades usually, but just in case)
-CREATE POLICY "Admins can delete any family shopping list item"
-  ON public.shopping_list_items FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.shopping_lists sl
-      WHERE sl.id = list_id
-      AND public.has_role(auth.uid(), sl.family_id, 'admin')
-    )
-  );
+-- CREATE POLICY "Admins can delete any family shopping list item"
+--   ON public.shopping_list_items FOR DELETE
+--   TO authenticated
+--   USING (
+--     EXISTS (
+--       SELECT 1 FROM public.shopping_lists sl
+--       WHERE sl.id = list_id
+--       AND public.has_role(auth.uid(), sl.family_id, 'admin')
+--     )
+--   );
 
 -- 8. AI Insights
 CREATE POLICY "Admins can delete any family insight"
@@ -858,11 +919,11 @@ DECLARE
   v_invitation public.family_invitations%ROWTYPE;
 BEGIN
   IF auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'NÃ£o autorizado.';
+    RAISE EXCEPTION 'Não autorizado.';
   END IF;
 
-  IF p_role NOT IN ('admin', 'member', 'viewer') THEN
-    RAISE EXCEPTION 'Papel invÃ¡lido.';
+  IF p_role NOT IN ('admin', 'standard', 'member', 'viewer') THEN
+    RAISE EXCEPTION 'Papel inválido.';
   END IF;
 
   IF v_email = '' THEN

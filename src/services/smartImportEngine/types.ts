@@ -3,7 +3,7 @@ export interface NormalizedExpense {
   data: string; // Formato YYYY-MM-DD
   descricao: string;
   categoria: string;
-  origem: 'planilha' | 'imagem' | 'pdf' | 'audio' | 'desconhecido';
+  origem: 'planilha' | 'imagem' | 'pdf' | 'audio' | 'texto' | 'desconhecido';
   audioUrl?: string;
 }
 

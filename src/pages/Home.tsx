@@ -9,6 +9,7 @@ import { SummaryCard } from "@/components/dashboard/SummaryCard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { InsightsSection } from "@/components/dashboard/InsightsSection";
 import { QuickAddTransaction } from "@/components/dashboard/QuickAddTransaction";
+import { ConversationalInput } from "@/components/dashboard/ConversationalInput";
 import { useGoals } from "@/hooks/useGoals";
 import { Progress } from "@/components/ui/progress";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -163,7 +164,12 @@ const HomePage = () => {
             </div>
           </Card>
 
-          {/* Somente exibe se puder criar transação */}
+          {/* Caixa conversacional — entrada principal por texto/áudio/anexo */}
+          {canCreateTransaction && (
+            <ConversationalInput onSuccess={() => refetchTransactions()} />
+          )}
+
+          {/* Lançamento manual mantido como fallback */}
           {canCreateTransaction && (
             <QuickAddTransaction onSuccess={() => refetchTransactions()} />
           )}

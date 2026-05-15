@@ -92,6 +92,12 @@ export const useSmartImport = () => {
     setExtractedExpenses(extractedExpenses.filter((_, i) => i !== index));
   };
 
+  // Carrega despesas já extraídas (ex.: vindas de parser de texto) direto na fase de revisão
+  const loadExpensesForReview = (expenses: NormalizedExpense[]) => {
+    setExtractedExpenses(expenses);
+    setIsReviewing(true);
+  };
+
   // Etapa 2: Confirmação e Inserção no Banco
   const confirmAndSave = async (): Promise<boolean> => {
     if (!user) return false;
@@ -175,6 +181,7 @@ export const useSmartImport = () => {
     removeExpense,
     extractData,
     confirmAndSave,
-    resetFull
+    resetFull,
+    loadExpensesForReview
   };
 };

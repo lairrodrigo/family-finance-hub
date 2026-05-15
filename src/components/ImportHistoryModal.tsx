@@ -19,11 +19,13 @@ interface ImportHistoryModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  smartImport?: ReturnType<typeof useSmartImport>;
 }
 
-export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryModalProps) => {
-  const { 
-    files, 
+export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: externalSmartImport }: ImportHistoryModalProps) => {
+  const internalSmartImport = useSmartImport();
+  const {
+    files,
     addFiles,
     removeFile,
     isProcessing,
@@ -35,7 +37,7 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess }: ImportHistoryMo
     extractData,
     confirmAndSave,
     resetFull
-  } = useSmartImport();
+  } = externalSmartImport ?? internalSmartImport;
   
   const { isRecording, duration, startRecording, stopRecording } = useAudioRecorder();
   const [isDragging, setIsDragging] = useState(false);
