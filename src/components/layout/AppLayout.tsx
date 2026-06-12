@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, MoreHorizontal, ShoppingBag, Target, Clock } from "lucide-react";
+import { Home, MoreHorizontal, Wallet, Target, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
-  { to: "/shopping", icon: ShoppingBag, label: "Compras" },
+  { to: "/carteira", icon: Wallet, label: "Carteira" },
   { to: "/history", icon: Clock, label: "Histórico" },
   { to: "/metas", icon: Target, label: "Metas" },
   { to: "/more", icon: MoreHorizontal, label: "Mais" },

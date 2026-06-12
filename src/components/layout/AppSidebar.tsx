@@ -19,7 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Visão Geral" },
+  { to: "/", icon: Home, label: "Cora" },
+  { to: "/carteira", icon: Wallet, label: "Carteira" },
   { to: "/transactions", icon: ArrowLeftRight, label: "Extrato" },
   { to: "/shopping", icon: ShoppingBag, label: "Compras" },
   { to: "/metas", icon: Target, label: "Metas" },

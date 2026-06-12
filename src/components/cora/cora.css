@@ -1,0 +1,90 @@
+/* ─────────────────────────────────────────────────────────────
+   Cora (Home IA) — escopo de tema isolado.
+   Tudo vive sob .cora-root para nao vazar pro resto do app
+   (que usa o tema azul/Inter do shadcn). Vars e fontes seguem
+   o PROMPT.md do prototipo HOME IA.
+   ───────────────────────────────────────────────────────────── */
+
+.cora-root {
+  /* dark (padrao) */
+  --bg: #0e0a0e;
+  --bg-2: #161118;
+  --surf: rgba(255, 250, 245, 0.04);
+  --surf-2: rgba(255, 250, 245, 0.07);
+  --hairline: rgba(255, 250, 245, 0.09);
+  --hairline-strong: rgba(255, 250, 245, 0.16);
+  --ink: #f8f2e9;
+  --ink-2: rgba(248, 242, 233, 0.78);
+  --ink-3: rgba(248, 242, 233, 0.5);
+  --ink-4: rgba(248, 242, 233, 0.3);
+  --accent: #c8b8ff;
+  --accent-deep: #8576e8;
+  --accent-warm: #ffb59a;
+  --good: #ffc9a8;
+  --bad: #ff8a8a;
+
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cora-root[data-cora-theme="light"] {
+  --bg: #fbfafc;
+  --bg-2: #f2f1f4;
+  --surf: rgba(20, 18, 30, 0.04);
+  --surf-2: rgba(20, 18, 30, 0.07);
+  --hairline: rgba(20, 18, 30, 0.09);
+  --hairline-strong: rgba(20, 18, 30, 0.16);
+  --ink: #14121a;
+  --ink-2: rgba(20, 18, 26, 0.78);
+  --ink-3: rgba(20, 18, 26, 0.5);
+  --ink-4: rgba(20, 18, 26, 0.3);
+  --accent: #5443d6;
+  --accent-deep: #382ca8;
+  --accent-warm: #c56d2e;
+  --good: #c56d2e;
+  --bad: #b83a3a;
+}
+
+/* keyframes prefixados pra nao colidir com o tailwindcss-animate do app */
+@keyframes cora-blob-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(8%, -6%) scale(1.06); }
+  66% { transform: translate(-5%, 5%) scale(0.96); }
+}
+@keyframes cora-blob-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, 6%) scale(1.1); }
+}
+@keyframes cora-blob-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(7%, -7%) scale(0.92); }
+}
+@keyframes cora-float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes cora-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes cora-pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes cora-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes cora-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cora-card-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cora-root *::-webkit-scrollbar { width: 0; height: 0; }
+.cora-root textarea::placeholder { color: var(--ink-4); }
