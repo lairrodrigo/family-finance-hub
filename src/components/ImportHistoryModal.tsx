@@ -22,6 +22,13 @@ interface ImportHistoryModalProps {
   smartImport?: ReturnType<typeof useSmartImport>;
 }
 
+type SpeechRecognitionWindow = Window & typeof globalThis & {
+  SpeechRecognition?: unknown;
+  webkitSpeechRecognition?: unknown;
+};
+
+const getErrorMessage = (err: unknown) => (err instanceof Error ? err.message : undefined);
+
 export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: externalSmartImport }: ImportHistoryModalProps) => {
   const internalSmartImport = useSmartImport();
   const {
@@ -41,7 +48,8 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
   
   const { isRecording, duration, startRecording, stopRecording } = useAudioRecorder();
   const [isDragging, setIsDragging] = useState(false);
-  const isSpeechSupported = !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const speechWindow = window as SpeechRecognitionWindow;
+  const isSpeechSupported = !!(speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,8 +63,8 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
   const handleStartRecording = async () => {
     try {
       await startRecording();
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao iniciar microfone. Verifique suas permissões.');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err) || 'Erro ao iniciar microfone. Verifique suas permissões.');
     }
   };
 
@@ -82,7 +90,7 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
             {isReviewing ? "Revisar" : "Importar"}
           </DialogTitle>
           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {isReviewing ? `${extractedExpenses.length} transações encontradas` : "Fale, envie fotos ou planilhas"}
+            {isReviewing ? `${extractedExpenses.length} transações encontradas` : "PDF, OFX, CSV ou planilhas"}
           </p>
         </DialogHeader>
 
@@ -148,13 +156,13 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
                       multiple
                       className="sr-only"
                       onChange={(e) => { if (e.target.files) addFiles(Array.from(e.target.files)); }}
-                      accept=".xlsx,.xls,.cvs,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a"
+                      accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a,application/pdf,text/csv"
                     />
                     <div className="h-16 w-16 bg-white/[0.03] rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05] group-hover:scale-110 transition-transform">
                       <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <p className="text-sm font-black text-white">Planilha ou Comprovante</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5">Arraste aqui ou toque para buscar</p>
+                    <p className="text-sm font-black text-white">Arquivo bancário ou PDF</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5">OFX, QIF, QFX, CSV, XLSX ou PDF</p>
                   </label>
                 </div>
               )}

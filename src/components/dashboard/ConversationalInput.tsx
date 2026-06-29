@@ -26,6 +26,8 @@ type AIRawTransaction = {
 const PLACEHOLDER =
   "Me conte como foi seu mês. Ex.: gastei 900 na moto, recebi 4 mil da PJ, comprei uma câmera parcelada...";
 
+const getErrorMessage = (err: unknown) => (err instanceof Error ? err.message : undefined);
+
 export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => {
   const smartImport = useSmartImport();
   const { isRecording, duration, startRecording, stopRecording } = useAudioRecorder();
@@ -81,9 +83,9 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
       smartImport.loadExpensesForReview(mapped);
       setText("");
       setModalOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("ConversationalInput: erro ao interpretar texto", err);
-      toast.error(err?.message || "Falha ao interpretar o texto.");
+      toast.error(getErrorMessage(err) || "Falha ao interpretar o texto.");
     } finally {
       setIsThinking(false);
     }
@@ -92,8 +94,8 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
   const handleStartRecording = async () => {
     try {
       await startRecording();
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao iniciar microfone. Verifique as permissões.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err) || "Erro ao iniciar microfone. Verifique as permissões.");
     }
   };
 
@@ -179,7 +181,7 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
                 type="file"
                 multiple
                 className="sr-only"
-                accept=".xlsx,.xls,.csv,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a"
+                accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a,application/pdf,text/csv"
                 onChange={(e) => {
                   handleFiles(e.target.files);
                   e.target.value = "";

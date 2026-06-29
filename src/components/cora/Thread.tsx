@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import { CoraAvatar } from "./CoraAvatar";
-import { EntryStack, fmt } from "./EntryCard";
+import { EntryStack } from "./EntryCard";
+import { fmt } from "./format";
 import { I } from "./icons";
 import type { CoraAccount, CoraMessage } from "./types";
 
@@ -29,9 +30,8 @@ export function ThinkingBubble({ label = "tô interpretando…" }: { label?: str
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          fontFamily: '"Bricolage Grotesque", sans-serif',
+          fontFamily: '"Manrope", system-ui, -apple-system, sans-serif',
           fontStyle: "italic",
-          fontVariationSettings: '"opsz" 18',
         }}
       >
         <span

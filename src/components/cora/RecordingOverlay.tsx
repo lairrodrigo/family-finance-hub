@@ -47,7 +47,7 @@ export function RecordingOverlay({ seconds, onCancel, onStop }: { seconds: numbe
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 32, padding: "0 28px", position: "relative", zIndex: 2 }}>
         <CoraAvatar size={170} mood="listening" amp={amps[amps.length - 1] * 100} />
-        <div style={{ fontFamily: '"Bricolage Grotesque", sans-serif', fontVariationSettings: '"opsz" 72', fontSize: 56, fontWeight: 300, letterSpacing: -2, color: "var(--ink)", lineHeight: 1, fontFeatureSettings: '"tnum"' }}>
+        <div style={{ fontFamily: '"Sora", "Manrope", system-ui, -apple-system, sans-serif', fontSize: 56, fontWeight: 700, letterSpacing: -1.8, color: "var(--ink)", lineHeight: 1, fontFeatureSettings: '"tnum"' }}>
           {mm}<span style={{ color: "var(--accent-warm)" }}>:</span>{ss}
         </div>
         <Waveform amps={amps} />

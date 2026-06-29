@@ -1,8 +1,7 @@
 import { CoraAvatar } from "./CoraAvatar";
+import { fmt } from "./format";
 import { I } from "./icons";
 import type { CoraAccount, CoraEntry, CoraFollowup } from "./types";
-
-export const fmt = (n: number) => "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const iconBtnStyle: React.CSSProperties = {
   width: 28,
@@ -94,11 +93,10 @@ export function EntryCard({
 
       <div
         style={{
-          fontFamily: '"Bricolage Grotesque", sans-serif',
-          fontVariationSettings: '"opsz" 72',
-          fontWeight: 400,
+          fontFamily: '"Sora", "Manrope", system-ui, -apple-system, sans-serif',
+          fontWeight: 800,
           color: tone,
-          letterSpacing: -2,
+          letterSpacing: -1.6,
           lineHeight: 0.92,
           display: "flex",
           alignItems: "baseline",
@@ -122,7 +120,7 @@ export function EntryCard({
 
       <div style={{ display: "flex", alignItems: "flex-start", gap: 6, paddingTop: 10, borderTop: "1px solid var(--hairline)", fontSize: 12, color: "var(--ink-3)", letterSpacing: -0.05 }}>
         <span style={{ color: "var(--ink-4)", flexShrink: 0 }}>↳</span>
-        <span style={{ fontFamily: '"Bricolage Grotesque", sans-serif', fontStyle: "italic", fontVariationSettings: '"opsz" 16' }}>{e.source}</span>
+        <span style={{ fontFamily: '"Manrope", system-ui, -apple-system, sans-serif', fontStyle: "italic" }}>{e.source}</span>
       </div>
     </div>
   );

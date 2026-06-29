@@ -42,7 +42,8 @@ serve(async (req) => {
 
     let prompt = `Você é um contador especializado. Analise o arquivo anexo e extraia transações financeiras.
 Retorne apenas JSON no formato:
-{ "transactions": [{ "date": "YYYY-MM-DD", "amount": number, "description": "string", "type": "income" | "expense", "categorySuggestion": "string" }] }`
+{ "transactions": [{ "date": "YYYY-MM-DD", "amount": number, "description": "string", "type": "income" | "expense", "categorySuggestion": "string", "origin": "PF" | "PJ" }] }
+Use "expense" para saidas/debitos/compras e "income" para entradas/creditos/recebimentos. Se nao souber a origem, use "PF".`
 
     if (contextType === "shopping") {
       prompt = `Você é um leitor inteligente de etiquetas de supermercado.

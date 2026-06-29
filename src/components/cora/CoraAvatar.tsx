@@ -12,8 +12,8 @@ export function CoraAvatar({ size = 56, mood = "idle", amp = 0 }: { size?: numbe
         borderRadius: "50%",
         overflow: "hidden",
         flexShrink: 0,
-        background: "radial-gradient(120% 110% at 30% 25%, #FFD0B4 0%, #C8B0FF 38%, #6B5BFF 78%, #2E2569 100%)",
-        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18), 0 8px 24px -8px rgba(107,91,255,0.55)",
+        background: "radial-gradient(115% 110% at 28% 20%, #FFE0C7 0%, #B99CFF 34%, #6D7CFF 70%, #182233 100%)",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.20), inset 0 -28px 42px rgba(15,23,42,0.22), 0 22px 70px -28px rgba(109,124,255,0.9)",
       }}
     >
       <div style={{ position: "absolute", inset: "-20%", filter: "blur(14px)", background: "radial-gradient(40% 40% at 70% 30%, #FFB59A 0%, transparent 60%)", animation: "cora-blob-1 6s ease-in-out infinite", mixBlendMode: "screen" }} />

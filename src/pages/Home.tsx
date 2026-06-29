@@ -214,14 +214,14 @@ const HomePage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-7 pb-8 animate-fade-in">
+    <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-7 pb-8 animate-fade-in xl:max-w-none">
       <DashboardHeader />
 
       {!familyId && !profileLoading && <NoFamilyBanner />}
 
-      <div className="grid grid-cols-1 items-start gap-7 xl:grid-cols-12">
-        <div className="flex flex-col gap-7 xl:col-span-8">
-          <Card className="premium-light-card relative overflow-hidden rounded-[1.5rem] p-6 text-[#0F172A] sm:p-8">
+      <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-12">
+        <div className="flex flex-col gap-7 lg:col-span-8">
+          <Card className="premium-light-card relative overflow-hidden rounded-[1.5rem] p-6 text-[#0F172A] sm:p-8 md:rounded-[2rem] md:p-10">
             <div className="flex items-center justify-between gap-4">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#2F67FF]">Saldo disponível</p>
               <Button
@@ -234,14 +234,14 @@ const HomePage = () => {
               </Button>
             </div>
 
-            <div className="mt-8 flex items-baseline gap-3 overflow-hidden">
+            <div className="mt-8 flex items-baseline gap-3 overflow-hidden md:mt-10">
               <span className="text-2xl font-extrabold text-[#65738A] sm:text-3xl">R$</span>
-              <p className="font-display truncate break-all text-5xl font-extrabold tracking-tighter text-[#0F172A] sm:text-7xl">
+              <p className="font-display truncate break-all text-5xl font-extrabold tracking-tighter text-[#0F172A] sm:text-7xl md:text-8xl lg:text-7xl">
                 {showValues ? balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "••••••"}
               </p>
             </div>
 
-            <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between md:mt-12">
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#172033] shadow-inner">
                   <Lock className="h-6 w-6" />
@@ -339,7 +339,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-7 xl:col-span-4">
+        <div className="flex flex-col gap-7 lg:col-span-4">
           <div className="space-y-4">
             <h2 className="premium-label px-1">Divvy IA</h2>
             <InsightsSection transactions={fullTransactions} categories={categories} isLoading={loading} />

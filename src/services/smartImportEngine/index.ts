@@ -1,6 +1,7 @@
 import { NormalizedExpense, ExtractorResult, FileType } from './types';
 import { extractSpreadsheet } from './localExtractor';
 import { extractMultimodal } from './multimodalExtractor';
+import { extractBankStatement } from './bankExtractor';
 
 export class SmartImportEngine {
   
@@ -20,6 +21,9 @@ export class SmartImportEngine {
     if (type === 'spreadsheet') {
       if (onProgress) onProgress("Processando planilha localmente...");
       return extractSpreadsheet(file);
+    } else if (type === 'bank') {
+      if (onProgress) onProgress("Lendo arquivo bancario...");
+      return extractBankStatement(file);
     } else {
       if (onProgress) onProgress("Analisando conteúdo...");
       return extractMultimodal(file, type, onProgress, transcript, audioUrl);
@@ -29,6 +33,7 @@ export class SmartImportEngine {
   private static detectType(file: File): FileType {
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     if (['xlsx', 'xls', 'csv'].includes(ext)) return 'spreadsheet';
+    if (['ofx', 'qif', 'qfx'].includes(ext)) return 'bank';
     if (['pdf'].includes(ext)) return 'pdf';
     if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return 'image';
     if (['mp3', 'wav', 'ogg', 'm4a', 'webm'].includes(ext)) return 'audio';
