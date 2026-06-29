@@ -121,7 +121,7 @@ const TransactionsPage = () => {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir esta transaÃ§Ã£o?")) return;
+    if (!window.confirm("Tem certeza que deseja excluir esta transação?")) return;
     
     try {
       const { data, error } = await supabase
@@ -133,15 +133,15 @@ const TransactionsPage = () => {
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        throw new Error("Acesso negado: VocÃª nÃ£o possui permissÃ£o para esta aÃ§Ã£o.");
+        throw new Error("Acesso negado: Você não possui permissão para esta ação.");
       }
       
-      // OpÃ§Ã£o 1 â€” AtualizaÃ§Ã£o local (Remover o item do estado atual)
+      // Atualização local: remove o item do estado atual.
       setTransactions(prev => prev.filter(t => t.id !== id));
-      toast.success("TransaÃ§Ã£o excluÃ­da com sucesso.");
+      toast.success("Transação excluída com sucesso.");
     } catch (err: any) {
-      console.error("Erro crÃ­tico na exclusÃ£o do Extrato:", err);
-      toast.error(err.message || "NÃ£o foi possÃ­vel excluir a transaÃ§Ã£o.");
+      console.error("Erro crítico na exclusão do Extrato:", err);
+      toast.error(err.message || "Não foi possível excluir a transação.");
     }
   };
 
@@ -167,14 +167,14 @@ const TransactionsPage = () => {
             onClick={() => navigate("/add")} 
             className="h-12 px-6 rounded-2xl bg-white text-black font-bold hover:bg-white/90 shadow-xl shadow-white/5 transition-all active:scale-95"
           >
-            LanÃ§ar
+            Lançar
           </Button>
         </div>
 
         <div className="relative group">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="O que vocÃª procura?" 
+            placeholder="O que você procura?" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-14 h-16 rounded-[1.5rem] bg-white/[0.02] border border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
@@ -194,7 +194,7 @@ const TransactionsPage = () => {
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-white/80">Nada por aqui</h3>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto font-medium">
-              Sua lista de atividades recentes estÃ¡ limpa.
+              Sua lista de atividades recentes está limpa.
             </p>
           </div>
         </div>
@@ -225,7 +225,7 @@ const TransactionsPage = () => {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-lg text-white truncate tracking-tight">{t.description || t.category_name}</h4>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-0.5">
-                      {new Date(t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} â€¢ {t.category_name}
+                      {new Date(t.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {t.category_name}
                     </p>
                   </div>
                   <div className={cn(
@@ -255,7 +255,7 @@ const TransactionsPage = () => {
             className="mt-8 h-14 rounded-2xl text-[10px] font-bold text-muted-foreground hover:text-white uppercase tracking-[0.3em] hover:bg-white/[0.02] transition-all"
             onClick={() => navigate("/history")}
           >
-            Ver histÃ³rico completo
+            Ver histórico completo
           </Button>
         </div>
       )}

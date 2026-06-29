@@ -364,7 +364,8 @@
   }
 
   .cora-shell {
-    max-width: 1180px;
+    width: 100%;
+    max-width: none;
     margin: 0 auto;
     border-inline: 1px solid rgba(255, 255, 255, 0.055);
     background:
@@ -373,18 +374,34 @@
       linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(17, 24, 39, 0.98));
   }
 
+  .cora-shell--welcome {
+    justify-content: center;
+    gap: clamp(22px, 3.4dvh, 36px);
+    padding:
+      calc(clamp(24px, 5dvh, 56px) + var(--cora-safe-top))
+      clamp(28px, 5vw, 72px)
+      clamp(28px, 6dvh, 72px);
+  }
+
   .cora-welcome {
     display: grid;
-    grid-template-columns: minmax(270px, 0.72fr) minmax(360px, 1fr);
+    grid-template-columns: minmax(210px, 0.62fr) minmax(340px, 1fr);
     grid-template-areas:
       "avatar greeting"
       "avatar headline"
       "avatar subtitle";
     align-content: center;
     align-items: center;
-    column-gap: 46px;
-    padding: 24px 54px 30px;
+    column-gap: clamp(38px, 5vw, 68px);
+    width: min(100%, 880px);
+    margin-inline: auto;
+    padding: 0;
     text-align: left;
+  }
+
+  .cora-shell--welcome .cora-welcome {
+    flex: 0 0 auto;
+    min-height: auto;
   }
 
   .cora-avatar-stage {
@@ -408,8 +425,8 @@
 
   .cora-headline {
     grid-area: headline;
-    margin: 16px 0 18px;
-    font-size: clamp(58px, 7vw, 76px);
+    margin: 14px 0 16px;
+    font-size: clamp(54px, 5.4vw, 76px);
     letter-spacing: -2.6px;
   }
 
@@ -429,6 +446,14 @@
     margin: 0 auto;
     border-radius: 28px;
     padding: 16px;
+  }
+
+  .cora-shell--welcome .cora-input-dock {
+    padding: 0;
+  }
+
+  .cora-shell--welcome .cora-assistant-input-card {
+    max-width: 760px;
   }
 
   .cora-input-icon-button,
@@ -468,29 +493,25 @@
 
 @media (min-width: 1024px) {
   .cora-welcome {
-    grid-template-columns: minmax(330px, 0.8fr) minmax(440px, 1fr);
-    column-gap: 66px;
-    padding-inline: 72px;
+    grid-template-columns: minmax(230px, 0.68fr) minmax(420px, 1fr);
+    column-gap: clamp(46px, 5vw, 76px);
+    width: min(100%, 940px);
   }
 
   .cora-avatar-stage {
-    transform: scale(1.18);
+    transform: scale(1.12);
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1366px) {
-  .cora-shell {
-    max-width: none;
-  }
-
   .cora-welcome {
-    grid-template-columns: minmax(250px, 0.72fr) minmax(500px, 1fr);
-    column-gap: 42px;
-    padding: calc(38px + var(--cora-safe-top)) 48px 22px;
+    grid-template-columns: minmax(210px, 0.62fr) minmax(360px, 1fr);
+    column-gap: clamp(34px, 4vw, 54px);
+    width: min(100%, 820px);
   }
 
   .cora-avatar-stage {
-    transform: scale(1.02);
+    transform: scale(1);
   }
 
   .cora-avatar-stage::before {
@@ -500,9 +521,9 @@
   }
 
   .cora-headline {
-    max-width: 590px;
+    max-width: 520px;
     margin: 12px 0 14px;
-    font-size: clamp(50px, 5.2vw, 64px);
+    font-size: clamp(46px, 4.9vw, 62px);
     letter-spacing: -2.2px;
     line-height: 0.96;
   }
@@ -520,6 +541,14 @@
     max-width: 920px;
     min-height: 76px;
     padding: 12px;
+  }
+
+  .cora-shell--welcome .cora-input-dock {
+    padding: 0;
+  }
+
+  .cora-shell--welcome .cora-assistant-input-card {
+    max-width: 700px;
   }
 }
 

@@ -265,7 +265,7 @@ export default function Cora() {
 
   return (
     <div className="cora-root" data-cora-theme="dark">
-      <main className="cora-shell">
+      <main className={showWelcome ? "cora-shell cora-shell--welcome" : "cora-shell"}>
         {showWelcome ? (
           <Welcome userName={firstName} />
         ) : (
