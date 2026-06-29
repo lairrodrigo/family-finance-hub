@@ -104,7 +104,7 @@ const AccountSummaryCard = ({
   return (
     <Card
       className={cn(
-        "premium-panel-hover relative min-h-[132px] min-w-0 overflow-hidden rounded-[1.25rem] p-3 shadow-[0_18px_45px_rgba(2,6,23,0.24)] sm:min-h-[150px] sm:rounded-[1.5rem] sm:p-5",
+        "premium-panel-hover relative flex flex-col justify-between min-h-[132px] min-w-0 overflow-hidden rounded-[1.25rem] p-3 shadow-[0_18px_45px_rgba(2,6,23,0.24)] sm:min-h-[150px] sm:rounded-[1.5rem] sm:p-5",
         variant === "pf"
           ? "border-blue-300/25 bg-gradient-to-br from-[#24488C] via-[#1D376B] to-[#172946]"
           : "border-emerald-300/25 bg-gradient-to-br from-[#0C6B59] via-[#0F5348] to-[#173A35]",
@@ -112,7 +112,7 @@ const AccountSummaryCard = ({
     >
       <Icon className="absolute right-3 top-3 h-14 w-14 text-white/[0.045] sm:right-4 sm:top-4 sm:h-16 sm:w-16" />
 
-      <div className="relative flex h-full min-w-0 flex-col justify-between gap-5 sm:gap-6">
+      <div className="relative flex flex-1 min-w-0 flex-col justify-between gap-4 sm:gap-6">
         <div>
           <p className="text-[7.5px] font-black uppercase tracking-[0.18em] text-white sm:text-[10px] sm:tracking-[0.24em]">
             {summary.label} <span className="ml-1 text-white/45">{summary.suffix}</span>

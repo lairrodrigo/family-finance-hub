@@ -52,7 +52,7 @@ export function MobileBottomNav({ embedded = false, className }: MobileBottomNav
         className,
       )}
     >
-      <div className="mx-auto grid w-full max-w-xl grid-cols-6 items-center gap-1 px-2 py-3.5 md:max-w-none md:px-3 md:py-3">
+      <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-1 px-3 py-2.5 md:max-w-none md:px-4 md:py-3">
         {tabs.map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
 
@@ -64,16 +64,18 @@ export function MobileBottomNav({ embedded = false, className }: MobileBottomNav
               onPointerEnter={() => prefetchRoute(to)}
               onTouchStart={() => prefetchRoute(to)}
               className={cn(
-                "flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[1.25rem] px-1 py-2.5 transition-[background-color,color,border-color,box-shadow] duration-150 active:scale-[0.98] md:flex-row md:gap-2.5 md:rounded-[1.35rem] md:px-4 md:py-3",
+                "flex items-center justify-center transition-all duration-300 active:scale-[0.95]",
                 isActive
-                  ? "bg-primary/15 text-white ring-1 ring-primary/25"
-                  : "text-muted-foreground hover:bg-white/[0.05] hover:text-white",
+                  ? "bg-primary/15 text-white ring-1 ring-primary/25 px-3.5 py-2.5 rounded-2xl gap-2 shrink-0 flex-grow-0"
+                  : "flex-1 text-muted-foreground hover:bg-white/[0.05] hover:text-white py-2.5 rounded-2xl"
               )}
             >
-              <Icon className={cn("h-5 w-5 transition-colors duration-150", isActive && "text-primary")} />
-              <span className={cn("text-[6.5px] font-black uppercase tracking-[0.08em] transition-opacity duration-150 md:text-[10px] md:tracking-[0.12em]", isActive ? "opacity-100" : "opacity-55")}>
-                {label}
-              </span>
+              <Icon className={cn("h-5 w-5 shrink-0 transition-colors duration-200", isActive ? "text-primary scale-110" : "text-muted-foreground")} />
+              {isActive && (
+                <span className="text-[10px] font-black uppercase tracking-[0.10em] text-white animate-fade-in truncate">
+                  {label}
+                </span>
+              )}
             </NavLink>
           );
         })}
