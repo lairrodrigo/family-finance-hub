@@ -89,7 +89,6 @@ const DiagnosticsPage = () => {
     });
 
     const categoryData = Array.from(categoryMap.values()).sort((a, b) => b.value - a.value);
-    const topCategory = categoryData[0];
     const balance = currentMonthIncome - currentExpense;
 
     return {
@@ -100,7 +99,6 @@ const DiagnosticsPage = () => {
       balance,
       monthlyData: expensesByMonth.slice(Math.max(0, currentMonth - 4), currentMonth + 1),
       categoryData,
-      topCategory,
     };
   }, [currentMonth, transactions]);
 

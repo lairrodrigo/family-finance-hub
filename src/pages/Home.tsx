@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ChevronRight, Eye, EyeOff, Loader2, Lock, Target, UserRound } from "lucide-react";
+import { Building2, ChevronRight, Eye, EyeOff, Loader2, Lock, Plus, Target, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -10,7 +10,7 @@ import { InsightsSection } from "@/components/dashboard/InsightsSection";
 import { QuickAddTransaction } from "@/components/dashboard/QuickAddTransaction";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useAccounts, type Account } from "@/hooks/useAccounts";
+import { useAccounts } from "@/hooks/useAccounts";
 import { useCategories } from "@/hooks/useCategories";
 import { useGoals } from "@/hooks/useGoals";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -26,15 +26,16 @@ const HomeGoalsSection = () => {
 
   if (displayGoals.length === 0) {
     return (
-      <Card
+      <button
+        type="button"
         onClick={() => navigate("/metas/new")}
-        className="premium-panel-hover flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-white/[0.10] bg-white/[0.03] p-6"
+        className="premium-panel-hover flex w-full cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-white/[0.10] bg-white/[0.03] p-6 text-center"
       >
         <Target className="mb-3 h-7 w-7 text-primary" />
         <span className="text-center text-xs font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
           Defina sua primeira meta financeira
         </span>
-      </Card>
+      </button>
     );
   }
 
@@ -79,7 +80,6 @@ const NoFamilyBanner = () => {
 };
 
 interface AccountSummary {
-  account?: Account;
   label: string;
   suffix: "PF" | "PJ";
   income: number;
@@ -175,8 +175,8 @@ const HomePage = () => {
     const pjAccount = safeAccounts.find((account) => account.name.toLowerCase() === "empresa pj");
 
     const summaries: Record<"pf" | "pj", AccountSummary> = {
-      pf: { account: pfAccount, label: "Pessoa", suffix: "PF", income: 0, expense: 0, balance: 0 },
-      pj: { account: pjAccount, label: "Empresa", suffix: "PJ", income: 0, expense: 0, balance: 0 },
+      pf: { label: "Pessoa", suffix: "PF", income: 0, expense: 0, balance: 0 },
+      pj: { label: "Empresa", suffix: "PJ", income: 0, expense: 0, balance: 0 },
     };
 
     (fullTransactions || []).forEach((transaction) => {
