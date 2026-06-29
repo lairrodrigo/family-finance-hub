@@ -40,12 +40,12 @@ export const DashedAddCard = ({ label, onClick }: { label: string; onClick?: () 
   return (
     <button 
       onClick={onClick}
-      className="flex w-full flex-col items-center justify-center gap-3 rounded-[2rem] border border-dashed border-[#222222] py-10 transition-all hover:bg-[#111111] group active:scale-[0.98]"
+      className="premium-panel-hover flex w-full flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-white/[0.12] bg-white/[0.03] py-10 transition-all group active:scale-[0.98]"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A1A1A] group-hover:bg-[#222222] transition-colors">
-        <span className="text-2xl font-light text-[#7B7B7B]">+</span>
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+        <span className="text-2xl font-light text-primary">+</span>
       </div>
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7B7B7B]">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
     </button>
   );
 };

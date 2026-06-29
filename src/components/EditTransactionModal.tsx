@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUpCircle, ArrowDownCircle, Loader2, Trash2, CreditCard, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fixMojibake } from "@/lib/text";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -92,7 +93,14 @@ export const EditTransactionModal = ({ open, onClose, onSuccess, transaction }: 
       supabase.from("goals").select("id, name").eq("is_completed", false).order("name"),
     ]);
 
-    if (loadedCategories) setCategories(loadedCategories);
+    if (loadedCategories) {
+      setCategories(
+        loadedCategories.map((category) => ({
+          ...category,
+          name: fixMojibake(category.name),
+        })),
+      );
+    }
     if (loadedCards) setCards(loadedCards);
     if (loadedGoals) setAllGoals(loadedGoals);
   };

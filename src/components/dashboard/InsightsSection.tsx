@@ -31,10 +31,10 @@ const SpendingGuideCard = ({
 }) => (
   <Card
     className={cn(
-      "relative overflow-hidden rounded-[2.5rem] border p-7 shadow-2xl",
-      state === "safe" && "border-emerald-500/10 bg-gradient-to-br from-[#0C140F] via-[#08100B] to-[#050505]",
-      state === "warning" && "border-amber-500/10 bg-gradient-to-br from-[#17120A] via-[#100C08] to-[#050505]",
-      state === "over" && "border-red-500/10 bg-gradient-to-br from-[#180C0C] via-[#100808] to-[#050505]",
+      "relative overflow-hidden rounded-[1.5rem] border p-7 shadow-2xl",
+      state === "safe" && "border-emerald-500/20 bg-gradient-to-br from-[#0D5C4B] via-[#133E37] to-[#182233]",
+      state === "warning" && "border-amber-500/20 bg-gradient-to-br from-[#6B4E16] via-[#3E321A] to-[#182233]",
+      state === "over" && "border-red-500/20 bg-gradient-to-br from-[#5F1F2A] via-[#352033] to-[#182233]",
     )}
   >
     <div
@@ -85,7 +85,7 @@ const InsightMiniCard = ({ insight }: { insight: Insight }) => {
   return (
     <Card
       className={cn(
-        "rounded-[1.75rem] border bg-[#0C0C0E] p-5 shadow-xl transition-all",
+        "premium-panel-hover rounded-[1.35rem] border bg-[#182233]/85 p-5 shadow-xl transition-all",
         insight.type === "danger" && "border-red-500/10",
         insight.type === "warning" && "border-amber-500/10",
         insight.type === "success" && "border-emerald-500/10",
@@ -118,7 +118,7 @@ export const InsightsSection = ({ transactions, categories, isLoading }: Insight
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="flex h-44 items-center justify-center rounded-[2.5rem] border border-white/[0.05] bg-white/[0.02]">
+        <div className="flex h-44 items-center justify-center rounded-[1.5rem] border border-white/[0.08] bg-white/[0.04]">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       </div>
@@ -138,14 +138,14 @@ export const InsightsSection = ({ transactions, categories, isLoading }: Insight
         state={spendingGuide.state}
       />
 
-      <div className="space-y-4 rounded-[2.5rem] border border-white/[0.05] bg-[#09090B] p-5 shadow-2xl">
+      <div className="premium-panel space-y-4 rounded-[1.5rem] p-5">
         <div className="px-1">
           <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Fique ligado</p>
           <p className="mt-1 text-sm font-medium text-muted-foreground">Sinais rápidos do que mais importa agora.</p>
         </div>
 
         {insights.length === 0 ? (
-          <Card className="rounded-[1.75rem] border border-white/[0.05] bg-[#0C0C0E] p-5">
+          <Card className="rounded-[1.35rem] border border-white/[0.08] bg-white/[0.04] p-5">
             <p className="text-sm font-medium leading-relaxed text-muted-foreground">
               Assim que você movimentar mais o mês, eu começo a destacar o que merece atenção.
             </p>

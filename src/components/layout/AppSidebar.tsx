@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, ArrowLeftRight, Target, MoreHorizontal, Wallet, Users, Settings, ShoppingBag, CreditCard, LogOut } from "lucide-react";
+import { ArrowLeftRight, BarChart3, CreditCard, Home, Settings, ShoppingBag, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -19,8 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Cora" },
-  { to: "/carteira", icon: Wallet, label: "Carteira" },
+  { to: "/", icon: Home, label: "Visão Geral" },
+  { to: "/diagnostics", icon: BarChart3, label: "Diagnóstico" },
   { to: "/transactions", icon: ArrowLeftRight, label: "Extrato" },
   { to: "/shopping", icon: ShoppingBag, label: "Compras" },
   { to: "/metas", icon: Target, label: "Metas" },
@@ -35,26 +35,28 @@ const managementItems = [
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, user, signOut } = useAuth();
+  const { profile, user } = useAuth();
 
   const userName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
-    <Sidebar className="border-r border-white/[0.05] bg-[#0C0C0E]">
+    <Sidebar className="border-r border-white/[0.08] bg-[#111827]/95 shadow-[18px_0_70px_rgba(2,6,23,0.26)] backdrop-blur-2xl">
       <SidebarHeader className="h-24 flex items-center px-8">
         <div className="flex items-center gap-4">
           <AppLogo size={40} className="hover:scale-110 transition-transform duration-500" />
           <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-white uppercase">Divvy Money</span>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-0.5">Premium Access</span>
+            <span className="font-display text-base font-bold tracking-tight text-white uppercase">Divvy Money</span>
+            <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">Premium Access</span>
           </div>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent className="px-4 gap-8 pt-6">
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">Menu Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">
+            Menu Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {navItems.map(({ to, icon: Icon, label }) => {
@@ -66,9 +68,9 @@ export function AppSidebar() {
                       isActive={isActive}
                       className={cn(
                         "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
-                        isActive 
-                          ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                          : "text-muted-foreground hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
+                        isActive
+                          ? "bg-primary/15 text-white border-primary/30 shadow-[0_16px_36px_rgba(91,140,255,0.16)]"
+                          : "text-muted-foreground hover:text-white hover:bg-[#1F2C42]/70 hover:border-white/[0.08]",
                       )}
                     >
                       <NavLink to={to} className="flex items-center gap-4 w-full h-full">
@@ -84,7 +86,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">Gestão</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4 h-auto">
+            Gestão
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {managementItems.map(({ to, icon: Icon, label }) => {
@@ -96,9 +100,9 @@ export function AppSidebar() {
                       isActive={isActive}
                       className={cn(
                         "h-14 px-5 rounded-2xl transition-all duration-300 group/menu-btn border border-transparent",
-                        isActive 
-                          ? "bg-primary/10 text-primary border-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                          : "text-muted-foreground hover:text-white hover:bg-white/[0.02] hover:border-white/[0.05]"
+                        isActive
+                          ? "bg-primary/15 text-white border-primary/30 shadow-[0_16px_36px_rgba(91,140,255,0.16)]"
+                          : "text-muted-foreground hover:text-white hover:bg-[#1F2C42]/70 hover:border-white/[0.08]",
                       )}
                     >
                       <NavLink to={to} className="flex items-center gap-4 w-full h-full">
@@ -114,12 +118,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-white/[0.05]">
-        <button 
+      <SidebarFooter className="p-4 border-t border-white/[0.08]">
+        <button
           onClick={() => navigate("/settings")}
-          className="flex items-center gap-3 w-full p-3 rounded-2xl hover:bg-white/[0.03] transition-all group active:scale-[0.98]"
+          className="flex items-center gap-3 w-full p-3 rounded-2xl hover:bg-[#1F2C42]/70 transition-all group active:scale-[0.98]"
         >
-          <Avatar className="h-10 w-10 border border-primary/20 group-hover:scale-110 transition-transform">
+          <Avatar className="h-10 w-10 border border-primary/25 shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform">
             <AvatarImage src={profile?.avatar_url ?? undefined} className="object-cover" />
             <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
               {userInitial}
@@ -136,5 +140,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-

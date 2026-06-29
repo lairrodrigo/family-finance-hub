@@ -32,6 +32,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { fixMojibake } from "@/lib/text";
 import { toast } from "sonner";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 
@@ -97,7 +98,7 @@ const TransactionsPage = () => {
 
       const formatted = data.map((t: any) => ({
         ...t,
-        category_name: t.categories?.name || 'Sem categoria',
+        category_name: fixMojibake(t.categories?.name) || 'Sem categoria',
         category_icon: t.categories?.icon || 'ellipsis',
         category_color: t.categories?.color || '#C0C0C0'
       }));

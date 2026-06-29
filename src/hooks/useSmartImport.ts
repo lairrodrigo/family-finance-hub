@@ -3,6 +3,7 @@ import { SmartImportEngine, NormalizedExpense } from '@/services/smartImportEngi
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { fixMojibake } from '@/lib/text';
 
 export interface FileWithTranscript {
   file: File;
@@ -110,21 +111,37 @@ export const useSmartImport = () => {
       const { data: profile } = await supabase.from('profiles').select('family_id').eq('user_id', user.id).single();
       if (!profile?.family_id) throw new Error("Usuário não possui uma família vinculada.");
 
-      const { data: categories } = await supabase.from('categories').select('*');
+      const [{ data: categories }, { data: accounts }] = await Promise.all([
+        supabase.from('categories').select('*').or(`family_id.eq.${profile.family_id},is_default.eq.true`),
+        supabase
+          .from('accounts')
+          .select('id, name')
+          .eq('family_id', profile.family_id)
+          .eq('is_active', true),
+      ]);
       const fallbackCategoryId = categories?.[0]?.id;
+      const pfAccount = accounts?.find(account => account.name.toLowerCase() === 'pessoa pf');
+      const pjAccount = accounts?.find(account => account.name.toLowerCase() === 'empresa pj');
 
       const payload = extractedExpenses.map(exp => {
-        const foundCat = categories?.find(c => c.name.toLowerCase().includes(exp.categoria.toLowerCase()));
+        const transactionType = exp.tipo || 'expense';
+        const normalizedExpenseCategory = fixMojibake(exp.categoria).toLowerCase();
+        const foundCat = categories?.find(c => (
+          (!c.type || c.type === transactionType) &&
+          fixMojibake(c.name).toLowerCase().includes(normalizedExpenseCategory)
+        ));
+        const accountId = exp.accountId || (exp.accountOrigin === 'PJ' ? pjAccount?.id : pfAccount?.id);
         
         return {
           user_id: user.id,
           created_by: user.id,
           family_id: profile.family_id,
           amount: Math.abs(exp.valor),
-          type: 'expense',
+          type: transactionType,
           description: exp.descricao,
           date: new Date(exp.data).toISOString(),
           category_id: foundCat?.id || fallbackCategoryId,
+          account_id: accountId || null,
           payment_type: 'cash',
         };
       });

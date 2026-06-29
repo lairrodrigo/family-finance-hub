@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 const Auth = lazy(() => import("./pages/Auth"));
 const Home = lazy(() => import("./pages/Home"));
 const Transactions = lazy(() => import("./pages/Transactions"));
+const Diagnostics = lazy(() => import("./pages/Diagnostics"));
 const AddTransaction = lazy(() => import("./pages/AddTransaction"));
 const History = lazy(() => import("./pages/History"));
 const Budgets = lazy(() => import("./pages/Budgets"));
@@ -25,7 +26,6 @@ const ShoppingListDetail = lazy(() => import("./pages/ShoppingListDetail"));
 const Cards = lazy(() => import("./pages/Cards"));
 const More = lazy(() => import("./pages/More"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Cora = lazy(() => import("./pages/Cora"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -47,7 +47,7 @@ function LoadingScreen() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 text-center">
+    <div className="app-shell flex min-h-screen flex-col items-center justify-center p-6 text-center">
       <div className="relative mb-12">
         {/* Glow effect behind logo */}
         <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
@@ -78,7 +78,7 @@ function LoadingScreen() {
               console.log("[LoadingScreen] Reiniciando via botão de emergência...");
               window.location.reload();
             }}
-            className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
+            className="rounded-xl border border-white/10 bg-white/5 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-white/10"
           >
             Tentar Novamente
           </button>
@@ -110,16 +110,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Rota protegida sem AppLayout — para telas imersivas (Cora) com navegação própria.
-function ProtectedFullscreen({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-
-  if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/auth" replace />;
-
-  return <>{children}</>;
-}
-
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -143,11 +133,9 @@ const App = () => (
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                <Route path="/" element={<ProtectedFullscreen><Cora /></ProtectedFullscreen>} />
-                <Route path="/carteira" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-                {/* compat: links antigos para /cora caem na home da Cora */}
-                <Route path="/cora" element={<Navigate to="/" replace />} />
+                <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+                <Route path="/diagnostics" element={<ProtectedRoute><Diagnostics /></ProtectedRoute>} />
                 <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
                 <Route path="/add" element={<ProtectedRoute><AddTransaction /></ProtectedRoute>} />
                 <Route path="/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />

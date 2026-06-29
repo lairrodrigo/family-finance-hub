@@ -4,6 +4,9 @@ export interface NormalizedExpense {
   descricao: string;
   categoria: string;
   origem: 'planilha' | 'imagem' | 'pdf' | 'audio' | 'texto' | 'desconhecido';
+  tipo?: 'income' | 'expense';
+  accountOrigin?: 'PF' | 'PJ';
+  accountId?: string;
   audioUrl?: string;
 }
 

@@ -254,7 +254,7 @@ const ShoppingListDetail = () => {
 
     try {
       await supabase.from("shopping_lists").update({
-        status: "concluida",
+        status: "completed",
         total_paid: finishData.total_paid,
       }).eq("id", id);
 
@@ -308,7 +308,7 @@ const ShoppingListDetail = () => {
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-white">{list?.name}</h1>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {list?.status === "concluida" ? "Compra Finalizada" : "Em Aberto"}
+              {list?.status === "completed" || list?.status === "concluida" ? "Compra Finalizada" : "Em Aberto"}
             </p>
           </div>
         </div>

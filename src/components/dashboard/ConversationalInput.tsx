@@ -1,14 +1,14 @@
-import { useState, useRef } from "react";
-import { Card } from "@/components/ui/card";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Paperclip, Send, Loader2, Sparkles, Square } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useSmartImport } from "@/hooks/useSmartImport";
-import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { Card } from "@/components/ui/card";
 import { ImportHistoryModal } from "@/components/ImportHistoryModal";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useSmartImport } from "@/hooks/useSmartImport";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import type { NormalizedExpense } from "@/services/smartImportEngine";
+import { Loader2, Mic, Paperclip, Send, Sparkles, Square } from "lucide-react";
+import { toast } from "sonner";
 
 interface ConversationalInputProps {
   onSuccess?: () => void;
@@ -23,7 +23,8 @@ type AIRawTransaction = {
   origin?: "PF" | "PJ";
 };
 
-const PLACEHOLDER = "Me conte como foi seu mês. Ex.: gastei 900 na moto, recebi 4 mil da PJ, comprei uma câmera parcelada...";
+const PLACEHOLDER =
+  "Me conte como foi seu mês. Ex.: gastei 900 na moto, recebi 4 mil da PJ, comprei uma câmera parcelada...";
 
 export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => {
   const smartImport = useSmartImport();
@@ -68,6 +69,8 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
           descricao: (t.description || "Sem descrição").trim(),
           categoria: t.categorySuggestion || "Outros",
           origem: "texto",
+          tipo: t.type || "expense",
+          accountOrigin: t.origin || "PF",
         }));
 
       if (mapped.length === 0) {
@@ -117,23 +120,23 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
 
   return (
     <>
-      <Card className="animate-in zoom-in-95 rounded-[2rem] border border-white/[0.05] bg-gradient-to-br from-[#0E0E10] via-[#0A0A0C] to-[#080809] p-5 shadow-2xl duration-500 sm:rounded-[2.5rem] sm:p-7">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Sparkles className="h-4 w-4" />
+      <Card className="premium-light-card animate-in zoom-in-95 rounded-[1.5rem] p-5 text-[#0F172A] duration-500 sm:p-7">
+        <div className="mb-5 flex items-center gap-4">
+          <div className="primary-action flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+            <Sparkles className="h-5 w-5" />
           </div>
-          <div>
-            <h3 className="text-sm font-black tracking-tight text-white">Descarregue o mês</h3>
-            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-              fale, escreva ou anexe — a IA organiza
+          <div className="min-w-0">
+            <h3 className="font-display text-xl font-extrabold tracking-tight text-[#0F172A]">Descarregue o mês</h3>
+            <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#7B8798]">
+              fale, escreva ou anexe - a IA organiza
             </p>
           </div>
         </div>
 
         <div
           className={cn(
-            "rounded-[1.5rem] border bg-white/[0.02] p-3 transition-all sm:rounded-[2rem] sm:p-4",
-            isThinking ? "border-primary/30" : "border-white/[0.05]",
+            "rounded-[1.35rem] border bg-[#EEF3FF]/70 p-4 shadow-inner transition-all sm:rounded-[1.5rem] sm:p-5",
+            isThinking ? "border-[#5B8CFF]/60 shadow-[#5B8CFF]/10" : "border-white/80",
           )}
         >
           <textarea
@@ -143,11 +146,11 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
             placeholder={PLACEHOLDER}
             rows={4}
             disabled={isThinking || isRecording}
-            className="w-full resize-none bg-transparent text-sm font-medium leading-relaxed text-white placeholder:text-white/20 focus:outline-none sm:text-base"
+            className="w-full resize-none bg-transparent text-base font-semibold leading-relaxed text-[#243047] placeholder:text-[#65738A] focus:outline-none"
           />
 
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1">
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -155,8 +158,8 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
                 onClick={isRecording ? handleStopRecording : handleStartRecording}
                 disabled={isThinking}
                 className={cn(
-                  "h-10 w-10 rounded-2xl text-muted-foreground transition-all hover:bg-white/5 hover:text-white",
-                  isRecording && "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
+                  "h-11 w-11 rounded-2xl text-[#243047] hover:bg-white/80 hover:text-[#0F172A]",
+                  isRecording && "bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-500",
                 )}
               >
                 {isRecording ? <Square className="h-4 w-4 fill-current" /> : <Mic className="h-4 w-4" />}
@@ -167,7 +170,7 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isThinking || isRecording}
-                className="h-10 w-10 rounded-2xl text-muted-foreground transition-all hover:bg-white/5 hover:text-white"
+                className="h-11 w-11 rounded-2xl text-[#243047] hover:bg-white/80 hover:text-[#0F172A]"
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
@@ -184,7 +187,7 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
               />
 
               {isRecording && (
-                <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-red-400">
+                <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-red-500">
                   Ouvindo {formatDuration(duration)}
                 </span>
               )}
@@ -194,7 +197,7 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
               type="button"
               onClick={handleTextSubmit}
               disabled={isThinking || isRecording || text.trim().length === 0}
-              className="h-10 rounded-2xl bg-white px-5 text-[10px] font-black uppercase tracking-[0.2em] text-black shadow-xl shadow-white/5 transition-all hover:bg-white/90 active:scale-95 disabled:opacity-20 sm:h-11"
+              className="h-11 rounded-2xl px-5 text-[10px] font-black uppercase tracking-[0.22em] sm:px-7"
             >
               {isThinking ? (
                 <>

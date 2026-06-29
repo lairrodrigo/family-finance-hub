@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fixMojibake } from "@/lib/text";
 
 export interface Transaction {
   id: string;
@@ -11,6 +12,7 @@ export interface Transaction {
   category_id: string;
   user_id: string;
   family_id: string;
+  account_id?: string | null;
   card_id?: string | null;
   payment_type?: "cash" | "credit_card" | null;
   categories?: {
@@ -18,6 +20,11 @@ export interface Transaction {
     icon: string;
     color: string;
   };
+  accounts?: {
+    name: string;
+    color: string | null;
+    icon: string | null;
+  } | null;
 }
 
 export const useTransactions = (options: { limit?: number; year?: number } = {}) => {
@@ -33,7 +40,8 @@ export const useTransactions = (options: { limit?: number; year?: number } = {})
         .from("transactions")
         .select(`
           *,
-          categories:category_id (name, icon, color)
+          categories:category_id (name, icon, color),
+          accounts:account_id (name, color, icon)
         `)
         .eq("family_id", familyId)
         .order("date", { ascending: false });
@@ -51,7 +59,21 @@ export const useTransactions = (options: { limit?: number; year?: number } = {})
       const { data: txs, error: txError } = await query;
 
       if (txError) throw txError;
-      return txs as any[];
+      return (txs || []).map((tx) => ({
+        ...tx,
+        categories: tx.categories
+          ? {
+              ...tx.categories,
+              name: fixMojibake(tx.categories.name),
+            }
+          : tx.categories,
+        accounts: tx.accounts
+          ? {
+              ...tx.accounts,
+              name: fixMojibake(tx.accounts.name),
+            }
+          : tx.accounts,
+      })) as Transaction[];
     },
     enabled: !!familyId,
     staleTime: 60 * 1000, // 1 minute

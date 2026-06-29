@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { fixMojibake } from "@/lib/text";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { SmartImportEngine } from "@/services/smartImportEngine";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -108,13 +109,20 @@ const AddTransactionPage = () => {
         console.error("Erro ao buscar categorias:", categoriesError);
       }
 
-      const nextCategories = loadedCategories || [];
+      const nextCategories = (loadedCategories || []).map((category) => ({
+        ...category,
+        name: fixMojibake(category.name),
+      }));
       setCategories(nextCategories);
       if (categoryId && !nextCategories.find((category) => category.id === categoryId)) {
         setCategoryId("");
       }
 
-      setAccounts(loadedAccounts || []);
+      const nextAccounts = loadedAccounts || [];
+      setAccounts(nextAccounts);
+      if (!accountId && nextAccounts.length > 0) {
+        setAccountId(nextAccounts.find((account) => account.name.toLowerCase() === "pessoa pf")?.id || nextAccounts[0].id);
+      }
       setCards(loadedCards || []);
       setGoals(loadedGoals || []);
     } catch (err) {
@@ -139,11 +147,13 @@ const AddTransactionPage = () => {
         setLastSmartData(result.expenses);
 
         if (expense.categoria) {
-          const exactCategory = categories.find((category) => category.name.toLowerCase() === expense.categoria.toLowerCase());
+          const normalizedExpenseCategory = fixMojibake(expense.categoria).toLowerCase();
+          const exactCategory = categories.find((category) => fixMojibake(category.name).toLowerCase() === normalizedExpenseCategory);
           const partialCategory = categories.find(
-            (category) =>
-              category.name.toLowerCase().includes(expense.categoria.toLowerCase()) ||
-              expense.categoria.toLowerCase().includes(category.name.toLowerCase()),
+            (category) => {
+              const categoryName = fixMojibake(category.name).toLowerCase();
+              return categoryName.includes(normalizedExpenseCategory) || normalizedExpenseCategory.includes(categoryName);
+            },
           );
           const bestCategory = exactCategory || partialCategory;
           if (bestCategory) setCategoryId(bestCategory.id);

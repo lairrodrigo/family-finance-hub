@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fixMojibake } from "@/lib/text";
 
 export interface Category {
   id: string;
@@ -21,7 +22,10 @@ export const useCategories = () => {
         .order("name");
 
       if (error) throw error;
-      return data as Category[];
+      return (data || []).map((category) => ({
+        ...category,
+        name: fixMojibake(category.name),
+      })) as Category[];
     },
     // Keep categories in cache for 1 hour, they don't change often
     staleTime: 60 * 60 * 1000,

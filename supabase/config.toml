@@ -1,14 +1,1 @@
-project_id = "nolvjgquuckburmtqzqn"
-
-# ── Open Finance (Pluggy) ──
-# Chamadas pelo app (exigem login do usuário → verify_jwt padrão = true)
-[functions.pluggy-connect-token]
-verify_jwt = true
-
-[functions.pluggy-sync]
-verify_jwt = true
-
-# Chamada pela PLUGGY (servidor externo, sem JWT de usuário). Protegida por
-# segredo na query (?key=PLUGGY_WEBHOOK_SECRET) dentro da própria função.
-[functions.pluggy-webhook]
-verify_jwt = false
+project_id = "dmqmbtiucatqhonzgoar"

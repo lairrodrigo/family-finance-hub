@@ -155,7 +155,7 @@ const Shopping = () => {
               <div className="flex justify-between items-start mb-6 sm:mb-8 relative z-10">
                 <div className="flex flex-col gap-2">
                   <Badge className="rounded-xl w-fit px-3 py-1 font-black text-[9px] uppercase tracking-widest bg-white/5 text-muted-foreground border-none">
-                    {list.status === 'concluida' ? 'Concluída' : 'Em Andamento'}
+                    {list.status === 'completed' || list.status === 'concluida' ? 'Concluída' : 'Em Andamento'}
                   </Badge>
                   <h3 className="text-xl font-bold text-white tracking-tight mt-1 truncate max-w-[180px]">{list.name}</h3>
                 </div>

@@ -43,17 +43,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#050505] px-6 relative overflow-hidden">
-      {/* Decorative Glows */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] animate-pulse" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px]" />
+    <div className="app-shell relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-10">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(125deg,rgba(91,140,255,0.16),transparent_30%),linear-gradient(180deg,transparent,rgba(2,6,23,0.24))]" />
 
-      <div className="w-full max-w-md z-10 space-y-12">
+      <div className="z-10 space-y-10" style={{ width: "min(28rem, calc(100vw - 3rem))" }}>
         {/* Logo Section */}
         <div className="flex flex-col items-center gap-6">
           <AppLogo size={80} className="hover:scale-110 transition-transform duration-500" />
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-white tracking-tight">Divvy Money</h1>
+            <h1 className="font-display text-4xl font-extrabold tracking-tight text-white">Divvy Money</h1>
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-[0.2em]">
               {isLogin ? "Sua Vida Financeira Unificada" : "Comece sua Jornada"}
             </p>
@@ -61,7 +59,7 @@ const Auth = () => {
         </div>
 
         {/* Auth Card */}
-        <div className="p-10 bg-[#0C0C0E] border border-white/[0.05] rounded-[3rem] shadow-2xl space-y-8 animate-in fade-in zoom-in-95 duration-700">
+        <div className="premium-panel animate-in space-y-8 rounded-[1.5rem] p-8 duration-700 fade-in zoom-in-95 sm:p-10">
           <div className="space-y-1">
             <h2 className="text-2xl font-bold text-white tracking-tight">{isLogin ? "Bem-vindo de volta" : "Criar nova conta"}</h2>
             <p className="text-sm text-muted-foreground font-medium">Preencha seus dados para continuar</p>
@@ -80,7 +78,7 @@ const Auth = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required={!isLogin}
-                    className="h-16 pl-14 rounded-2xl bg-white/[0.02] border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
+                    className="h-16 pl-14 font-bold"
                   />
                 </div>
               </div>
@@ -97,7 +95,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-16 pl-14 rounded-2xl bg-white/[0.02] border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
+                  className="h-16 pl-14 font-bold"
                 />
               </div>
             </div>
@@ -114,12 +112,12 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="h-16 pl-14 rounded-2xl bg-white/[0.02] border-white/[0.05] text-white font-bold placeholder:text-white/5 focus-visible:ring-primary/20 transition-all"
+                  className="h-16 pl-14 font-bold"
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-18 py-8 rounded-[1.5rem] bg-white text-black text-xl font-bold shadow-2xl shadow-white/5 hover:bg-white/90 active:scale-[0.98] transition-all gap-4 mt-4" disabled={loading}>
+            <Button type="submit" className="mt-4 h-[4.5rem] w-full gap-4 rounded-[1.5rem] py-8 text-xl font-extrabold" disabled={loading}>
               {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : isLogin ? "Entrar agora" : "Cadastrar conta"}
             </Button>
           </form>
@@ -129,7 +127,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm font-bold text-muted-foreground hover:text-white transition-all tracking-tight"
+              className="text-sm font-bold tracking-tight text-muted-foreground transition-all hover:text-white"
             >
               {isLogin ? "Não tem uma conta? " : "Já possui cadastro? "}
               <span className="text-primary hover:underline">{isLogin ? "Cadastre-se grátis" : "Fazer Login"}</span>

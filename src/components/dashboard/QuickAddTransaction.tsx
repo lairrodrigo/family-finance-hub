@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Plus, Tag, Mic, Paperclip, Loader2, CreditCard } from "lucide-react";
+import { fixMojibake } from "@/lib/text";
+import { Banknote, Plus, Tag, Mic, Paperclip, Loader2, CreditCard } from "lucide-react";
 import { ImportHistoryModal } from "@/components/ImportHistoryModal";
 
 interface QuickAddTransactionProps {
@@ -18,6 +19,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   const { user, familyId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
   const [cards, setCards] = useState<any[]>([]);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
@@ -25,6 +27,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   const [type, setType] = useState<"income" | "expense">("expense");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
+  const [accountId, setAccountId] = useState<string>("");
   const [paymentType, setPaymentType] = useState<"cash" | "credit_card">("cash");
   const [cardId, setCardId] = useState<string>("");
   const [errors, setErrors] = useState<{ amount?: string; category?: string; cardId?: string }>({});
@@ -64,7 +67,10 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
         console.error("QuickAddTransaction: Erro ao buscar categorias:", categoriesError);
       }
 
-      const nextCategories = loadedCategories || [];
+      const nextCategories = (loadedCategories || []).map((category) => ({
+        ...category,
+        name: fixMojibake(category.name),
+      }));
       setCategories(nextCategories);
       if (categoryId && !nextCategories.find((category) => category.id === categoryId)) {
         setCategoryId("");
@@ -82,6 +88,23 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
       }
 
       setCards(loadedCards || []);
+
+      const { data: loadedAccounts, error: accountsError } = await supabase
+        .from("accounts")
+        .select("id, name")
+        .eq("family_id", currentFamilyId)
+        .eq("is_active", true)
+        .order("name");
+
+      if (accountsError) {
+        console.error("QuickAddTransaction: Erro ao buscar contas:", accountsError);
+      }
+
+      const nextAccounts = loadedAccounts || [];
+      setAccounts(nextAccounts);
+      if (!accountId && nextAccounts.length > 0) {
+        setAccountId(nextAccounts.find((account) => account.name.toLowerCase() === "pessoa pf")?.id || nextAccounts[0].id);
+      }
     } catch (err) {
       console.error("QuickAddTransaction: Erro ao buscar dados:", err);
     }
@@ -145,6 +168,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
             type,
             description: description || "",
             category_id: categoryId,
+            account_id: accountId || null,
             payment_type: type === "expense" ? paymentType : null,
             card_id: type === "expense" && paymentType === "credit_card" ? cardId : null,
             date: new Date().toISOString().split("T")[0],
@@ -171,7 +195,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
   };
 
   return (
-    <Card className="animate-in zoom-in-95 rounded-[2rem] border border-white/[0.05] bg-[#0C0C0E] p-6 shadow-2xl duration-500 sm:rounded-[2.5rem] sm:p-7">
+    <Card className="premium-panel animate-in zoom-in-95 rounded-[1.5rem] p-6 duration-500 sm:p-7">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground sm:text-[10px]">Lançamento Rápido</h3>
@@ -194,14 +218,14 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
             </Button>
           </div>
         </div>
-        <div className="flex shrink-0 rounded-full bg-white/[0.03] p-1">
+        <div className="flex shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] p-1">
           <button
             type="button"
             onClick={() => setType("expense")}
             className={cn(
               "rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all sm:px-4",
               type === "expense"
-                ? "bg-red-500/10 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                ? "bg-[#F87171]/15 text-[#FCA5A5] shadow-[0_10px_26px_rgba(248,113,113,0.12)]"
                 : "text-muted-foreground hover:text-muted-foreground",
             )}
           >
@@ -213,7 +237,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
             className={cn(
               "rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all sm:px-4",
               type === "income"
-                ? "bg-primary/10 text-primary shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+                ? "bg-primary/15 text-primary shadow-[0_10px_26px_rgba(91,140,255,0.16)]"
                 : "text-muted-foreground hover:text-muted-foreground",
             )}
           >
@@ -272,7 +296,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
               >
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
-              <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
+              <SelectContent className="rounded-2xl border-white/10 bg-[#111827]/95 shadow-3xl">
                 {categories.length > 0 ? (
                   categories.map((category) => (
                     <SelectItem key={category.id} value={category.id} className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
@@ -289,13 +313,37 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
             {errors.category && <p className="ml-4 text-[10px] font-black uppercase tracking-wider text-red-400">{errors.category}</p>}
           </div>
 
+          <div className="w-full flex-1 space-y-1">
+            <div className="relative">
+              <Banknote className="absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Select value={accountId} onValueChange={setAccountId}>
+                <SelectTrigger className="h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-12 font-black transition-all sm:h-14">
+                  <SelectValue placeholder="Conta" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/10 bg-[#111827]/95 shadow-3xl">
+                  {accounts.length > 0 ? (
+                    accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id} className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
+                        {account.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-xs font-medium text-muted-foreground">Nenhuma conta encontrada</p>
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {type === "expense" && (
             <div className="w-full flex-1 space-y-1">
               <Select value={paymentType} onValueChange={(value: "cash" | "credit_card") => setPaymentType(value)}>
                 <SelectTrigger className="h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-4 font-black transition-all sm:h-14">
                   <SelectValue placeholder="Como foi essa despesa?" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
+                <SelectContent className="rounded-2xl border-white/10 bg-[#111827]/95 shadow-3xl">
                   <SelectItem value="cash" className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
                     Dinheiro
                   </SelectItem>
@@ -313,8 +361,8 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
             className={cn(
               "h-12 w-full shrink-0 rounded-2xl px-8 text-xs font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 md:w-auto sm:h-14",
               type === "expense"
-                ? "bg-red-500/10 text-white shadow-[0_0_15px_rgba(239,68,68,0.12)] hover:bg-red-500/20"
-                : "bg-primary/10 text-white shadow-[0_0_15px_rgba(59,130,246,0.12)] hover:bg-primary/20",
+                ? "bg-[#F87171]/15 text-white shadow-[0_12px_30px_rgba(248,113,113,0.14)] hover:bg-[#F87171]/25"
+                : "bg-primary/15 text-white shadow-[0_12px_30px_rgba(91,140,255,0.18)] hover:bg-primary/25",
             )}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Plus className="mr-2 h-4 w-4" /> Lançar</>}
@@ -340,7 +388,7 @@ export const QuickAddTransaction = ({ onSuccess }: QuickAddTransactionProps) => 
                 >
                   <SelectValue placeholder="Selecione o cartão" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-white/5 bg-[#0C0C0E] shadow-3xl">
+                <SelectContent className="rounded-2xl border-white/10 bg-[#111827]/95 shadow-3xl">
                   {cards.length > 0 ? (
                     cards.map((card) => (
                       <SelectItem key={card.id} value={card.id} className="my-1 rounded-xl font-black transition-colors focus:bg-white/5">
