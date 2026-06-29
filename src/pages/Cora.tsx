@@ -4,14 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useCoraPersist } from "@/hooks/useCoraPersist";
-import { useSmartImport } from "@/hooks/useSmartImport";
-import { ImportHistoryModal } from "@/components/ImportHistoryModal";
 import { Welcome } from "@/components/cora/Welcome";
 import { Thread, ThinkingBubble } from "@/components/cora/Thread";
 import { InputDock } from "@/components/cora/InputDock";
 import { RecordingOverlay } from "@/components/cora/RecordingOverlay";
 import type { CoraAccount, CoraEntry, CoraMessage } from "@/components/cora/types";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { SmartImportEngine, type NormalizedExpense } from "@/services/smartImportEngine";
 import "@/components/cora/cora.css";
 
 type AIRawTransaction = {
@@ -26,7 +25,13 @@ type AIRawTransaction = {
 type Phase = "idle" | "thread" | "recording" | "thinking";
 
 const uid = (p: string) => `${p}${Date.now()}${Math.floor(Math.random() * 1000)}`;
-const getErrorMessage = (err: unknown) => (err instanceof Error ? err.message : undefined);
+const getErrorMessage = (err: unknown) => {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message?: unknown }).message);
+  }
+  return undefined;
+};
 
 function mapToEntries(transactions: AIRawTransaction[]): CoraEntry[] {
   const today = new Date().toISOString().split("T")[0];
@@ -45,17 +50,33 @@ function mapToEntries(transactions: AIRawTransaction[]): CoraEntry[] {
     }));
 }
 
+function mapImportedExpensesToEntries(expenses: NormalizedExpense[], fileName: string): CoraEntry[] {
+  const today = new Date().toISOString().split("T")[0];
+
+  return expenses
+    .filter((expense) => Number.isFinite(expense.valor) && Math.abs(expense.valor) > 0)
+    .map((expense) => ({
+      id: uid("e"),
+      kind: expense.tipo === "income" ? "income" : "expense",
+      amount: Math.abs(expense.valor),
+      label: (expense.descricao || fileName).trim(),
+      category: expense.categoria || "Outros",
+      account: expense.accountOrigin === "PJ" ? "PJ" : "PF",
+      installments: null,
+      source: `Arquivo: ${fileName}`,
+      date: expense.data && /^\d{4}-\d{2}-\d{2}$/.test(expense.data) ? expense.data : today,
+    }));
+}
+
 export default function Cora() {
   const { profile } = useAuth();
   const { duration, startRecording, stopRecording } = useAudioRecorder();
   const { saveEntries } = useCoraPersist();
-  const smartImport = useSmartImport();
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [thinkingLabel, setThinkingLabel] = useState("");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<CoraMessage[]>([]);
-  const [importModalOpen, setImportModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -172,10 +193,72 @@ export default function Cora() {
     toast.info("Edição inline chega em breve. Por ora dá pra remover ou ajustar a fala.");
   };
 
-  const handleAttachFiles = (selected: FileList | null) => {
+  const handleAttachFiles = async (selected: FileList | null) => {
     if (!selected || selected.length === 0) return;
-    smartImport.addFiles(Array.from(selected));
-    setImportModalOpen(true);
+
+    const selectedFiles = Array.from(selected);
+    const validFiles = selectedFiles.filter((file) => file.size <= 10 * 1024 * 1024);
+    const ignoredCount = selectedFiles.length - validFiles.length;
+
+    if (ignoredCount > 0) {
+      toast.error("Arquivos > 10MB foram ignorados.");
+    }
+
+    if (validFiles.length === 0) return;
+
+    const fileNames = validFiles.map((file) => file.name).join(", ");
+    setMessages((prev) => [...prev, { id: uid("u"), from: "user", kind: "text", text: `Anexei: ${fileNames}` }]);
+    setPhase("thinking");
+    setThinkingLabel("lendo arquivo...");
+
+    const entries: CoraEntry[] = [];
+    const errors: string[] = [];
+
+    for (const file of validFiles) {
+      try {
+        const result = await SmartImportEngine.processFile(
+          file,
+          (message) => setThinkingLabel(message),
+        );
+
+        if (result.error) {
+          errors.push(result.error);
+          continue;
+        }
+
+        entries.push(...mapImportedExpensesToEntries(result.expenses, file.name));
+      } catch (err: unknown) {
+        errors.push(getErrorMessage(err) || `Falha lendo ${file.name}.`);
+      }
+    }
+
+    if (entries.length > 0) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid("c"),
+          from: "cora",
+          mood: "idle",
+          text: `Li o arquivo${validFiles.length > 1 ? "s" : ""} e separei isso aqui:`,
+          entries,
+          confirmed: false,
+          followup: null,
+        },
+      ]);
+    } else {
+      const reason = errors[0] ? ` ${errors[0]}` : "";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid("c"),
+          from: "cora",
+          text: `Recebi o arquivo, mas não achei lançamentos com valor pra salvar.${reason}`,
+        },
+      ]);
+    }
+
+    setPhase("thread");
+    setThinkingLabel("");
   };
 
   const showWelcome = messages.length === 0 && phase !== "recording";
@@ -184,7 +267,17 @@ export default function Cora() {
     <div className="cora-root" data-cora-theme="dark">
       <main className="cora-shell">
         {showWelcome ? (
-          <Welcome userName={firstName} onSuggest={(t) => setDraft(t)} />
+          <Welcome
+            userName={firstName}
+            onSuggest={(t) => {
+              if (t === "mandar print da fatura") {
+                fileInputRef.current?.click();
+                return;
+              }
+
+              setDraft(t);
+            }}
+          />
         ) : (
           <Thread
             scrollRef={scrollRef}
@@ -207,7 +300,7 @@ export default function Cora() {
           type="file"
           multiple
           className="sr-only"
-          accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,application/pdf,text/csv"
+          accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.webp,application/pdf,text/csv,image/jpeg,image/png,image/webp"
           onChange={(event) => {
             handleAttachFiles(event.target.files);
             event.target.value = "";
@@ -226,13 +319,6 @@ export default function Cora() {
 
         {phase === "recording" && <RecordingOverlay seconds={duration} onCancel={handleCancelRecording} onStop={handleStopRecording} />}
       </main>
-
-      <ImportHistoryModal
-        open={importModalOpen}
-        onClose={() => setImportModalOpen(false)}
-        onSuccess={() => setImportModalOpen(false)}
-        smartImport={smartImport}
-      />
     </div>
   );
 }

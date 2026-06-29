@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useSmartImport } from "@/hooks/useSmartImport";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { Upload, FileText, X, Mic, Square, Loader2, ArrowRight } from "lucide-react";
+import { Upload, FileText, X, Mic, Square, Loader2, ArrowRight, AlertTriangle } from "lucide-react";
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
     removeFile,
     isProcessing,
     progressMessage,
+    importError,
     isReviewing,
     extractedExpenses,
     updateExpense,
@@ -200,6 +201,21 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
                   <div className="space-y-2">
                     <p className="text-xl font-black tracking-tight text-white">{progressMessage || "Analisando..."}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Isso pode levar alguns segundos</p>
+                  </div>
+                </div>
+              )}
+
+              {!isProcessing && importError && (
+                <div className="flex gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.08] p-4 text-left animate-in fade-in slide-in-from-bottom-2">
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-red-500/10 text-red-300 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-black text-white">Nao consegui concluir a analise</p>
+                    <p className="text-xs font-semibold leading-relaxed text-white/60">{importError}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-200/70">
+                      Tente reenviar um PDF menor, CSV, OFX ou um print das paginas principais.
+                    </p>
                   </div>
                 </div>
               )}

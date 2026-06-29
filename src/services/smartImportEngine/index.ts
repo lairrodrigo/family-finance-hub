@@ -18,12 +18,17 @@ export class SmartImportEngine {
       return { expenses: [], error: `Formato de arquivo não suportado: ${file.name}` };
     }
 
+    // Arquivos estruturados usam parser determinístico/local. IA fica reservada
+    // para imagem/OCR, áudio/conversa, resumos e diagnósticos.
     if (type === 'spreadsheet') {
       if (onProgress) onProgress("Processando planilha localmente...");
       return extractSpreadsheet(file);
     } else if (type === 'bank') {
       if (onProgress) onProgress("Lendo arquivo bancario...");
       return extractBankStatement(file);
+    } else if (type === 'pdf') {
+      if (onProgress) onProgress("Lendo PDF localmente...");
+      return extractMultimodal(file, type, onProgress, transcript, audioUrl);
     } else {
       if (onProgress) onProgress("Analisando conteúdo...");
       return extractMultimodal(file, type, onProgress, transcript, audioUrl);

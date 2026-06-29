@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { SmartImportEngine, NormalizedExpense } from '@/services/smartImportEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,15 @@ export interface FileWithTranscript {
   audioUrl?: string; // URL temporária para playback
 }
 
+type InsertableTransactionsTable = {
+  insert: (payload: unknown) => {
+    select: () => Promise<{
+      data: unknown[] | null;
+      error: { message?: string } | null;
+    }>;
+  };
+};
+
 export const useSmartImport = () => {
   const { user } = useAuth();
   const [files, setFiles] = useState<FileWithTranscript[]>([]);
@@ -18,6 +27,8 @@ export const useSmartImport = () => {
   // Estados de Processamento
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const activeRunRef = useRef(0);
   
   // Estado de Revisão e Garantia
   const [extractedExpenses, setExtractedExpenses] = useState<NormalizedExpense[]>([]);
@@ -29,6 +40,7 @@ export const useSmartImport = () => {
     if (valid.length < newFiles.length) toast.error("Arquivos > 10MB foram ignorados.");
     
     const wrapped = valid.map(f => ({ file: f, transcript, audioUrl }));
+    setImportError(null);
     setFiles(prev => [...prev, ...wrapped]);
   };
 
@@ -45,6 +57,9 @@ export const useSmartImport = () => {
 
     setIsProcessing(true);
     setProgressMessage("Processando arquivos...");
+    setImportError(null);
+    const runId = activeRunRef.current + 1;
+    activeRunRef.current = runId;
     
     let allExpenses: NormalizedExpense[] = [];
     let hasError = false;
@@ -53,23 +68,36 @@ export const useSmartImport = () => {
       try {
         const result = await SmartImportEngine.processFile(
           item.file, 
-          (msg) => setProgressMessage(msg),
+          (msg) => {
+            if (activeRunRef.current === runId) setProgressMessage(msg);
+          },
           item.transcript,
           item.audioUrl
         );
+
+        if (activeRunRef.current !== runId) return;
         
         if (result.error) {
-          toast.error(`Erro em ${item.file.name}: ${result.error}`);
+          const message = `Erro em ${item.file.name}: ${result.error}`;
+          toast.error(message);
+          setImportError(message);
           hasError = true;
           continue;
         }
 
         allExpenses = [...allExpenses, ...result.expenses];
-      } catch (err: any) {
-         toast.error(`Falha lendo ${item.file.name}`);
-         hasError = true;
+      } catch (err: unknown) {
+        if (activeRunRef.current !== runId) return;
+
+        const details = err instanceof Error ? err.message : "Erro desconhecido";
+        const message = `Falha lendo ${item.file.name}: ${details}`;
+        toast.error(message);
+        setImportError(message);
+        hasError = true;
       }
     }
+
+    if (activeRunRef.current !== runId) return;
 
     setIsProcessing(false);
     setProgressMessage(null);
@@ -83,7 +111,7 @@ export const useSmartImport = () => {
   };
 
   // Funções para ajustar dados durante a revisão
-  const updateExpense = (index: number, field: keyof NormalizedExpense, value: any) => {
+  const updateExpense = (index: number, field: keyof NormalizedExpense, value: NormalizedExpense[keyof NormalizedExpense]) => {
     const copy = [...extractedExpenses];
     copy[index] = { ...copy[index], [field]: value };
     setExtractedExpenses(copy);
@@ -142,11 +170,12 @@ export const useSmartImport = () => {
           date: new Date(exp.data).toISOString(),
           category_id: foundCat?.id || fallbackCategoryId,
           account_id: accountId || null,
-          payment_type: 'cash',
+          payment_type: transactionType === 'expense' ? 'cash' : null,
         };
       });
 
-      const { data: trxData, error: insertError } = await (supabase.from('transactions') as any).insert(payload).select();
+      const transactionsTable = supabase.from('transactions') as unknown as InsertableTransactionsTable;
+      const { data: trxData, error: insertError } = await transactionsTable.insert(payload).select();
       if (insertError) throw insertError;
       if (!trxData || trxData.length === 0) throw new Error("Acesso negado: Você não possui permissão para importar transações.");
 
@@ -166,8 +195,9 @@ export const useSmartImport = () => {
       resetFull();
       return true;
 
-    } catch (err: any) {
-      toast.error(`Falha ao salvar: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      toast.error(`Falha ao salvar: ${message}`);
       return false;
     } finally {
       setIsProcessing(false);
@@ -184,6 +214,8 @@ export const useSmartImport = () => {
     setIsReviewing(false);
     setIsProcessing(false);
     setProgressMessage(null);
+    setImportError(null);
+    activeRunRef.current += 1;
   };
 
   return {
@@ -192,6 +224,7 @@ export const useSmartImport = () => {
     removeFile,
     isProcessing,
     progressMessage,
+    importError,
     isReviewing,
     extractedExpenses,
     updateExpense,

@@ -97,7 +97,7 @@ const PageLoader = () => (
 );
 
 const sidebarStyle = {
-  "--sidebar-width": "clamp(12rem, 22vw, 16rem)",
+  "--sidebar-width": "clamp(11.5rem, 20vw, 15rem)",
 } as React.CSSProperties;
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

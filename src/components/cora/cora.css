@@ -615,6 +615,61 @@
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .cora-shell {
+    max-width: none;
+  }
+
+  .cora-welcome {
+    grid-template-columns: minmax(250px, 0.72fr) minmax(500px, 1fr);
+    column-gap: 42px;
+    padding: calc(38px + var(--cora-safe-top)) 48px 22px;
+  }
+
+  .cora-avatar-stage {
+    transform: scale(1.02);
+  }
+
+  .cora-avatar-stage::before {
+    width: 292px;
+    height: 292px;
+    filter: blur(30px);
+  }
+
+  .cora-headline {
+    max-width: 590px;
+    margin: 12px 0 14px;
+    font-size: clamp(50px, 5.2vw, 64px);
+    letter-spacing: -2.2px;
+    line-height: 0.96;
+  }
+
+  .cora-subtitle {
+    max-width: 390px;
+    font-size: 15.5px;
+  }
+
+  .cora-quick-actions {
+    gap: 12px;
+    margin-top: 34px;
+  }
+
+  .cora-quick-action-card {
+    min-height: 94px;
+    padding: 14px;
+  }
+
+  .cora-input-dock {
+    padding: 12px 34px calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .cora-assistant-input-card {
+    max-width: 920px;
+    min-height: 76px;
+    padding: 12px;
+  }
+}
+
 @media (max-width: 767px) {
   .cora-root {
     --cora-safe-top: max(env(safe-area-inset-top, 0px), 14px);

@@ -43,7 +43,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-white/[0.08] bg-[#111827]/95 shadow-[18px_0_70px_rgba(2,6,23,0.26)] backdrop-blur-2xl">
-      <SidebarHeader className="h-24 flex items-center px-8">
+      <SidebarHeader
+        className="flex items-center px-8"
+        style={{
+          minHeight: "calc(6rem + max(env(safe-area-inset-top, 0px), 16px))",
+          paddingTop: "max(env(safe-area-inset-top, 0px), 16px)",
+        }}
+      >
         <div className="flex items-center gap-4">
           <AppLogo size={40} className="hover:scale-110 transition-transform duration-500" />
           <div className="flex flex-col">
@@ -119,7 +125,10 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-white/[0.08]">
+      <SidebarFooter
+        className="border-t border-white/[0.08] p-4"
+        style={{ paddingBottom: "calc(1rem + max(env(safe-area-inset-bottom, 0px), 10px))" }}
+      >
         <button
           onClick={() => navigate("/settings")}
           className="flex items-center gap-3 w-full p-3 rounded-2xl hover:bg-[#1F2C42]/70 transition-all group active:scale-[0.98]"

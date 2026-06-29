@@ -1,6 +1,49 @@
 import { extractFinancialDocumentWithAI } from "./documentAiExtractor";
-import { parseTextToExpense } from "./localParserRules";
+import { parseTextToExpense, parseTextToExpenses } from "./localParserRules";
 import type { ExtractorResult, FileType } from "./types";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+const AI_EXTRACTION_TIMEOUT_MS = 30_000;
+const PDF_LOCAL_TIMEOUT_MS = 45_000;
+const PDF_OPEN_TIMEOUT_MS = 12_000;
+const PDF_PAGE_TIMEOUT_MS = 8_000;
+const MAX_LOCAL_PDF_PAGES = 8;
+const MAX_LOCAL_PDF_TEXT_LENGTH = 50_000;
+
+class ImportTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ImportTimeoutError";
+  }
+}
+
+const isImportTimeoutError = (err: unknown) => (
+  err instanceof Error && err.name === "ImportTimeoutError"
+);
+
+const withTimeout = <T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string,
+  onTimeout?: () => void,
+): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      onTimeout?.();
+      reject(new ImportTimeoutError(message));
+    }, ms);
+
+    promise
+      .then((value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      });
+  });
+};
 
 export const extractMultimodal = async (
   file: File,
@@ -12,7 +55,11 @@ export const extractMultimodal = async (
   try {
     if (type === "image") {
       try {
-        const aiResult = await extractFinancialDocumentWithAI(file, onProgress);
+        const aiResult = await withTimeout(
+          extractFinancialDocumentWithAI(file, onProgress),
+          AI_EXTRACTION_TIMEOUT_MS,
+          "A analise segura demorou demais.",
+        );
         if (aiResult.expenses.length > 0) return aiResult;
       } catch (aiErr) {
         console.warn("Falha na IA do documento, tentando OCR local.", aiErr);
@@ -38,19 +85,31 @@ export const extractMultimodal = async (
     }
 
     if (type === "pdf") {
-      try {
-        const aiResult = await extractFinancialDocumentWithAI(file, onProgress);
-        if (aiResult.expenses.length > 0) return aiResult;
-      } catch (aiErr) {
-        console.warn("Falha na IA do documento, tentando leitura local.", aiErr);
-      }
-
       if (onProgress) onProgress("Extraindo texto do PDF localmente...");
       try {
-        const text = await extractPdfTextLocal(file, onProgress);
-        const expense = parseTextToExpense(text, "pdf");
-        return { expenses: [expense] };
-      } catch {
+        const text = await withTimeout(
+          extractPdfTextLocal(file, onProgress),
+          PDF_LOCAL_TIMEOUT_MS,
+          "A extracao local do PDF demorou demais.",
+        );
+        if (!text.trim()) throw new Error("O PDF nao continha texto pesquisavel.");
+
+        const expenses = parseTextToExpenses(text, "pdf");
+        if (expenses.length === 0) {
+          throw new Error("O PDF nao continha movimentacoes com valor.");
+        }
+
+        return { expenses };
+      } catch (localErr) {
+        console.warn("Falha na leitura local do PDF.", localErr);
+
+        if (isImportTimeoutError(localErr)) {
+          return {
+            expenses: [],
+            error: "O PDF demorou demais para ser lido no celular. Tente um PDF menor, CSV/OFX ou um print das paginas principais.",
+          };
+        }
+
         return {
           expenses: [{
             valor: 0,
@@ -99,19 +158,55 @@ const scanImageLocal = async (file: File, onProgress?: (m: string) => void): Pro
   });
 };
 
-const extractPdfTextLocal = async (file: File): Promise<string> => {
+const extractPdfTextLocal = async (file: File, onProgress?: (m: string) => void): Promise<string> => {
   const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = "";
+  const loadingTask = pdfjsLib.getDocument({
+    data: arrayBuffer,
+    isEvalSupported: false,
+    maxImageSize: 8_000_000,
+    stopAtErrors: false,
+    useWorkerFetch: false,
+  });
+  const pdf = await withTimeout(
+    loadingTask.promise,
+    PDF_OPEN_TIMEOUT_MS,
+    "O PDF demorou demais para abrir.",
+    () => { void loadingTask.destroy().catch(() => undefined); },
+  );
 
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const strings = content.items.map((item: unknown) => (item as { str?: string }).str ?? "");
-    fullText += strings.join(" ") + "\n";
+  let fullText = "";
+  const pagesToRead = Math.min(pdf.numPages, MAX_LOCAL_PDF_PAGES);
+
+  try {
+    for (let i = 1; i <= pagesToRead; i++) {
+      onProgress?.(`Lendo PDF localmente: pagina ${i} de ${pagesToRead}...`);
+
+      const page = await withTimeout(
+        pdf.getPage(i),
+        PDF_PAGE_TIMEOUT_MS,
+        `A pagina ${i} demorou demais para abrir.`,
+      );
+      const content = await withTimeout(
+        page.getTextContent(),
+        PDF_PAGE_TIMEOUT_MS,
+        `A pagina ${i} demorou demais para extrair texto.`,
+      );
+      const strings = content.items
+        .map((item: unknown) => (item as { str?: string }).str?.trim() ?? "")
+        .filter(Boolean);
+      fullText += strings.join("\n") + "\n";
+      page.cleanup();
+
+      if (fullText.length >= MAX_LOCAL_PDF_TEXT_LENGTH) {
+        fullText = fullText.slice(0, MAX_LOCAL_PDF_TEXT_LENGTH);
+        break;
+      }
+    }
+  } finally {
+    await pdf.destroy().catch(() => undefined);
   }
 
   return fullText;

@@ -45,13 +45,13 @@ export function InputDock({
   return (
     <div className="cora-input-dock">
       <div className="cora-assistant-input-card">
-        <DockIcon onClick={onAttach} title="anexar arquivo bancário ou PDF" disabled={disabled}>{I.attach}</DockIcon>
+        <DockIcon onClick={onAttach} title="anexar print, PDF ou arquivo bancário" disabled={disabled}>{I.attach}</DockIcon>
         <textarea
           ref={ref}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="diz aí. texto, áudio, PDF ou arquivo bancário"
+          placeholder="diz aí. texto, áudio, print, PDF ou arquivo bancário"
           rows={1}
           disabled={disabled}
           className="cora-input-textarea"
