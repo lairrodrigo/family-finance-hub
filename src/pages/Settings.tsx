@@ -15,24 +15,12 @@ import {
   DollarSign,
   ExternalLink,
   Camera,
-  Trash2,
-  AlertTriangle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -156,9 +144,6 @@ const SettingsPage = () => {
   const [savingName, setSavingName] = useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
-  const [resetConfirm, setResetConfirm] = useState("");
-  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -369,41 +354,6 @@ const SettingsPage = () => {
     setSigningOut(true);
     await signOut();
     navigate("/auth");
-  };
-
-  // Apaga TODOS os dados financeiros da família (transações, metas, compras,
-  // cartões, histórico e conexões bancárias). Mantém a conta e a família.
-  const handleResetApp = async () => {
-    if (resetConfirm.trim().toUpperCase() !== "ZERAR" || !user?.id) return;
-    const familyId = family?.id || profile?.family_id || null;
-
-    setResetting(true);
-    try {
-      const db = supabase as any;
-      const ops: Promise<unknown>[] = [];
-
-      if (familyId) {
-        ops.push(db.from("transactions").delete().eq("family_id", familyId));
-        ops.push(db.from("goals").delete().eq("family_id", familyId));
-        ops.push(db.from("shopping_lists").delete().eq("family_id", familyId));
-        ops.push(db.from("cards").delete().eq("family_id", familyId));
-        ops.push(db.from("bank_connections").delete().eq("family_id", familyId));
-      }
-      ops.push(db.from("history_entries").delete().eq("user_id", user.id));
-
-      // Cada tabela falha de forma independente (ex.: tabela ainda não migrada).
-      await Promise.allSettled(ops);
-
-      toast.success("Aplicativo zerado. Dados financeiros apagados.");
-      setResetOpen(false);
-      setResetConfirm("");
-      // Recarrega pra limpar todo o cache do React Query.
-      setTimeout(() => window.location.assign("/"), 600);
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao zerar o aplicativo.");
-    } finally {
-      setResetting(false);
-    }
   };
 
   if (loading) {
@@ -627,79 +577,6 @@ const SettingsPage = () => {
           />
         </Card>
       </div>
-
-      <div>
-        <SectionLabel>Zona de Perigo</SectionLabel>
-        <Card className="overflow-hidden rounded-[2.5rem] border border-red-500/[0.12] bg-[#0C0C0E] shadow-2xl">
-          <SettingsRow
-            icon={Trash2}
-            label="Zerar Aplicativo"
-            value="Apagar todos os dados financeiros"
-            onClick={() => setResetOpen(true)}
-            danger
-            disabled={resetting}
-          />
-        </Card>
-      </div>
-
-      <AlertDialog
-        open={resetOpen}
-        onOpenChange={(open) => {
-          if (!resetting) {
-            setResetOpen(open);
-            if (!open) setResetConfirm("");
-          }
-        }}
-      >
-        <AlertDialogContent className="rounded-[2rem] border border-red-500/20 bg-[#0C0C0E]">
-          <AlertDialogHeader>
-            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-400">
-              <AlertTriangle className="h-6 w-6" />
-            </div>
-            <AlertDialogTitle className="text-white">Zerar todo o aplicativo?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              Isso apaga <span className="font-bold text-red-400">permanentemente</span> todas as transações, metas,
-              listas de compras, cartões, histórico e conexões bancárias desta família. Sua conta e seus dados de perfil
-              são mantidos. <span className="font-bold text-white/80">Essa ação não pode ser desfeita.</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Para confirmar, digite <span className="font-bold text-white">ZERAR</span> abaixo:
-            </p>
-            <Input
-              value={resetConfirm}
-              onChange={(e) => setResetConfirm(e.target.value)}
-              placeholder="ZERAR"
-              disabled={resetting}
-              className="h-11 rounded-xl border-white/[0.08] bg-white/[0.04] text-center text-sm font-bold uppercase tracking-[0.3em] text-white focus-visible:ring-red-500/30"
-            />
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={resetting} className="rounded-xl border-white/10 bg-transparent text-white hover:bg-white/5">
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                void handleResetApp();
-              }}
-              disabled={resetting || resetConfirm.trim().toUpperCase() !== "ZERAR"}
-              className="rounded-xl bg-red-500 text-white hover:bg-red-600 disabled:opacity-40"
-            >
-              {resetting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Apagando...
-                </>
-              ) : (
-                "Apagar tudo"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <div className="flex flex-col items-center gap-1 pb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Divvy Money</p>

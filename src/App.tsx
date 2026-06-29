@@ -9,6 +9,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { AppLogo } from "@/components/ui/AppLogo";
 import { Loader2 } from "lucide-react";
 
 // Lazy loading pages for better performance
@@ -54,12 +55,9 @@ function LoadingScreen() {
         {/* Glow effect behind logo */}
         <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
         
-        <div className="relative h-24 w-24 sm:h-32 sm:w-32 animate-in zoom-in-75 duration-700 ease-out">
-          <img 
-            src="/icon-512.png" 
-            alt="Divvy Money" 
-            className="h-full w-full object-contain filter drop-shadow-2xl"
-          />
+        <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-[2rem] border border-white/[0.08] bg-[#111827]/70 shadow-2xl shadow-primary/10 animate-in zoom-in-75 duration-700 ease-out sm:h-32 sm:w-32 sm:rounded-[2.35rem]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/18 via-white/[0.03] to-transparent" />
+          <AppLogo size={104} className="relative z-10" />
         </div>
       </div>
 

@@ -6,7 +6,7 @@ const passwords = [
     'ctH&jEuu3ntsBLH'
 ];
 
-const host = 'db.nolvjgquuckburmtqzqn.supabase.co';
+const host = 'db.dmqmbtiucatqhonzgoar.supabase.co';
 
 async function testPasswords() {
     for (const pw of passwords) {

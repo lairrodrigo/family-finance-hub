@@ -10,13 +10,6 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
-    // Google Drive (G:) faz o watcher do Vite crashar (EINVAL) ao observar a pasta public.
-    // Ignorar public/ evita o crash quando os ícones/splashes mudam.
-    watch: {
-      usePolling: true,
-      interval: 1000,
-      ignored: ["**/public/**", "**/.git/**", "**/node_modules/**"],
-    },
   },
   plugins: [react()].filter(Boolean),
   resolve: {
