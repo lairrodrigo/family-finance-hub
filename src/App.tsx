@@ -132,7 +132,7 @@ function ProtectedFullscreen({ children }: { children: React.ReactNode }) {
         <div className="hidden md:block">
           <AppSidebar />
         </div>
-        <div className="flex min-w-0 flex-1">{children}</div>
+        <div className="flex min-w-0 flex-1 justify-center">{children}</div>
       </div>
     </SidebarProvider>
   );

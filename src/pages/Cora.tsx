@@ -267,17 +267,7 @@ export default function Cora() {
     <div className="cora-root" data-cora-theme="dark">
       <main className="cora-shell">
         {showWelcome ? (
-          <Welcome
-            userName={firstName}
-            onSuggest={(t) => {
-              if (t === "mandar print da fatura") {
-                fileInputRef.current?.click();
-                return;
-              }
-
-              setDraft(t);
-            }}
-          />
+          <Welcome userName={firstName} />
         ) : (
           <Thread
             scrollRef={scrollRef}

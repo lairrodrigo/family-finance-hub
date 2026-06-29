@@ -28,11 +28,15 @@
 
   font-family: "Manrope", system-ui, -apple-system, sans-serif;
   color: var(--ink);
+  width: 100%;
+  min-width: 0;
   height: 100dvh;
   min-height: 100dvh;
   display: flex;
+  align-items: stretch;
   justify-content: center;
   overflow: hidden;
+  overscroll-behavior: none;
   background:
     radial-gradient(780px circle at 50% -18%, rgba(109, 124, 255, 0.22), transparent 58%),
     radial-gradient(520px circle at 110% 18%, rgba(185, 156, 255, 0.16), transparent 58%),
@@ -102,8 +106,9 @@
 .cora-root textarea::placeholder { color: var(--ink-3); }
 
 .cora-shell {
-  width: 100%;
+  width: min(100%, 480px);
   max-width: 480px;
+  margin-inline: auto;
   height: 100dvh;
   min-height: 0;
   max-height: 100dvh;
@@ -112,6 +117,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  transform: translateZ(0);
   background:
     radial-gradient(520px circle at 50% 16%, rgba(109, 124, 255, 0.14), transparent 62%),
     linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(17, 24, 39, 0.96));
@@ -150,9 +156,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0;
-  padding: calc(clamp(22px, 5.2dvh, 42px) + var(--cora-safe-top)) 24px 12px;
+  padding: calc(clamp(18px, 4dvh, 34px) + var(--cora-safe-top)) 24px clamp(34px, 8dvh, 72px);
   text-align: center;
   position: relative;
   animation: cora-home-in 0.58s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -230,101 +236,6 @@
   line-height: 1.45;
   letter-spacing: -0.12px;
   text-wrap: balance;
-}
-
-.cora-quick-actions {
-  width: 100%;
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.cora-quick-actions-title {
-  text-align: left;
-  color: var(--ink-3);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 2.6px;
-  margin: 0 2px 2px;
-}
-
-.cora-quick-action-card {
-  width: 100%;
-  min-height: 54px;
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--hairline);
-  border-radius: 18px;
-  background: var(--glass);
-  color: var(--ink);
-  padding: 10px 13px;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  box-shadow: 0 18px 46px rgba(2, 6, 23, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.cora-quick-action-card:hover {
-  background: rgba(36, 49, 73, 0.84);
-  border-color: rgba(255, 255, 255, 0.13);
-  transform: translateY(-1px);
-}
-
-.cora-quick-action-card:active {
-  transform: scale(0.985);
-}
-
-.cora-quick-action-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 25px;
-  min-width: 34px;
-  border-radius: 999px;
-  background: rgba(109, 124, 255, 0.13);
-  color: #c9d0ff;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-
-.cora-quick-action-icon {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--accent);
-}
-
-.cora-quick-action-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.cora-quick-action-label {
-  color: var(--ink);
-  font-size: 13.5px;
-  font-weight: 750;
-  letter-spacing: -0.12px;
-}
-
-.cora-quick-action-arrow {
-  display: inline-flex;
-  color: var(--accent);
-}
-
-.cora-quick-action-arrow svg {
-  width: 18px;
-  height: 18px;
 }
 
 .cora-input-dock {
@@ -428,6 +339,8 @@
   flex-shrink: 0;
   position: relative;
   z-index: 4;
+  width: 100%;
+  contain: layout paint;
 }
 
 .cora-thinking-slot {
@@ -466,8 +379,7 @@
     grid-template-areas:
       "avatar greeting"
       "avatar headline"
-      "avatar subtitle"
-      "actions actions";
+      "avatar subtitle";
     align-content: center;
     align-items: center;
     column-gap: 46px;
@@ -505,51 +417,6 @@
     grid-area: subtitle;
     max-width: 440px;
     font-size: 17px;
-  }
-
-  .cora-quick-actions {
-    grid-area: actions;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 48px;
-  }
-
-  .cora-quick-actions-title {
-    grid-column: 1 / -1;
-    margin-bottom: 0;
-  }
-
-  .cora-quick-action-card {
-    min-height: 118px;
-    grid-template-columns: auto 1fr auto;
-    grid-template-rows: auto 1fr;
-    align-content: start;
-    align-items: start;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  .cora-quick-action-badge {
-    grid-column: 1;
-  }
-
-  .cora-quick-action-icon {
-    grid-column: 2;
-    justify-self: start;
-  }
-
-  .cora-quick-action-label {
-    grid-column: 1 / -1;
-    align-self: end;
-    font-size: 15.5px;
-    line-height: 1.25;
-  }
-
-  .cora-quick-action-arrow {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: end;
-    align-self: center;
   }
 
   .cora-input-dock {
@@ -609,10 +476,6 @@
   .cora-avatar-stage {
     transform: scale(1.18);
   }
-
-  .cora-quick-actions {
-    margin-top: 56px;
-  }
 }
 
 @media (min-width: 1024px) and (max-width: 1366px) {
@@ -649,16 +512,6 @@
     font-size: 15.5px;
   }
 
-  .cora-quick-actions {
-    gap: 12px;
-    margin-top: 34px;
-  }
-
-  .cora-quick-action-card {
-    min-height: 94px;
-    padding: 14px;
-  }
-
   .cora-input-dock {
     padding: 12px 34px calc(22px + env(safe-area-inset-bottom, 0px));
   }
@@ -675,17 +528,27 @@
     --cora-safe-top: max(env(safe-area-inset-top, 0px), 14px);
   }
 
+  .cora-shell {
+    width: 100%;
+    max-width: 100%;
+    border-inline: 0;
+  }
+
   .cora-welcome {
-    padding: calc(12px + var(--cora-safe-top)) 28px 10px;
+    padding:
+      calc(16px + var(--cora-safe-top))
+      max(24px, calc(env(safe-area-inset-right, 0px) + 24px))
+      clamp(26px, 8dvh, 64px)
+      max(24px, calc(env(safe-area-inset-left, 0px) + 24px));
   }
 
   .cora-avatar-stage {
-    height: 116px;
-    margin-bottom: 12px;
+    height: clamp(126px, 20dvh, 154px);
+    margin-bottom: 16px;
   }
 
   .cora-avatar-stage > * {
-    transform: scale(0.88);
+    transform: scale(0.98);
   }
 
   .cora-avatar-stage::before {
@@ -700,29 +563,23 @@
   }
 
   .cora-headline {
-    margin: 8px 0 10px;
-    font-size: clamp(32px, 8.4vw, 42px);
+    margin: 12px 0 14px;
+    font-size: clamp(36px, 9.6vw, 48px);
     letter-spacing: -1.7px;
   }
 
   .cora-subtitle {
-    max-width: 300px;
-    font-size: 13.5px;
-    line-height: 1.38;
-  }
-
-  .cora-quick-actions {
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .cora-quick-action-card {
-    min-height: 52px;
-    padding: 9px 12px;
+    max-width: 320px;
+    font-size: 14.5px;
+    line-height: 1.42;
   }
 
   .cora-input-dock {
-    padding: 8px 14px 6px;
+    padding:
+      8px
+      max(14px, calc(env(safe-area-inset-right, 0px) + 14px))
+      6px
+      max(14px, calc(env(safe-area-inset-left, 0px) + 14px));
   }
 
   .cora-assistant-input-card {
@@ -734,14 +591,14 @@
 
 @media (max-height: 760px) {
   .cora-welcome {
-    justify-content: flex-start;
-    padding-top: calc(14px + var(--cora-safe-top));
-    padding-bottom: 6px;
+    justify-content: center;
+    padding-top: calc(10px + var(--cora-safe-top));
+    padding-bottom: clamp(18px, 5dvh, 38px);
   }
 
   .cora-avatar-stage {
-    height: 108px;
-    margin-bottom: 10px;
+    height: clamp(110px, 18dvh, 132px);
+    margin-bottom: 12px;
     transform: none;
   }
 
@@ -756,35 +613,14 @@
   }
 
   .cora-headline {
-    font-size: clamp(32px, 8vw, 40px);
-    margin: 8px 0;
+    font-size: clamp(34px, 8.8vw, 43px);
+    margin: 10px 0;
   }
 
   .cora-subtitle {
-    max-width: 290px;
-    font-size: 13px;
-    line-height: 1.35;
-  }
-
-  .cora-quick-actions {
-    gap: 6px;
-    margin-top: 14px;
-  }
-
-  .cora-quick-action-card {
-    min-height: 48px;
-    padding: 8px 12px;
-    border-radius: 16px;
-  }
-
-  .cora-quick-action-badge {
-    height: 22px;
-    min-width: 30px;
-  }
-
-  .cora-quick-action-icon {
-    width: 30px;
-    height: 30px;
+    max-width: 310px;
+    font-size: 13.5px;
+    line-height: 1.38;
   }
 
   .cora-input-dock {

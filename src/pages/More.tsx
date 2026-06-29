@@ -20,17 +20,17 @@ const MorePage = () => {
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
-    <div className="animate-fade-in pb-8 max-w-2xl mx-auto px-1">
-      <div className="flex flex-col items-center sm:items-start gap-4 mb-12 text-center sm:text-left pt-4">
-        <Avatar className="h-24 w-24 rounded-[2.5rem] border border-primary/20 shadow-2xl">
+    <div className="mx-auto flex w-full max-w-md animate-fade-in flex-col pb-4 sm:max-w-2xl sm:pb-8">
+      <div className="flex flex-col items-center gap-4 pb-9 pt-3 text-center sm:items-start sm:pb-12 sm:pt-4 sm:text-left">
+        <Avatar className="h-[5.5rem] w-[5.5rem] rounded-[2rem] border border-primary/20 shadow-[0_24px_70px_rgba(91,140,255,0.16)] sm:h-24 sm:w-24 sm:rounded-[2.5rem]">
           <AvatarImage src={profile?.avatar_url ?? undefined} className="object-cover" />
-          <AvatarFallback className="rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 text-3xl font-black uppercase text-primary">
+          <AvatarFallback className="rounded-[2rem] bg-gradient-to-br from-primary/20 to-primary/5 text-3xl font-black uppercase text-primary sm:rounded-[2.5rem]">
             {userInitial}
           </AvatarFallback>
         </Avatar>
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-white tracking-tighter">Minha Conta</h1>
-          <p className="text-[10px] sm:text-sm font-bold text-muted-foreground uppercase tracking-widest truncate max-w-[250px]">{user?.email}</p>
+        <div className="w-full min-w-0 space-y-1">
+          <h1 className="text-3xl font-black tracking-tighter text-white">Minha Conta</h1>
+          <p className="mx-auto max-w-[250px] truncate text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:mx-0 sm:text-sm">{user?.email}</p>
         </div>
       </div>
 
@@ -39,29 +39,29 @@ const MorePage = () => {
           <button
             key={label}
             onClick={() => navigate(to)}
-            className="flex w-full items-center gap-4 sm:gap-5 rounded-[2rem] sm:rounded-[2.5rem] bg-[#0C0C0E] p-5 sm:p-6 border border-white/[0.05] text-left transition-all hover:bg-[#121214] hover:scale-[1.01] shadow-xl group active:scale-[0.98]"
+            className="group flex w-full min-w-0 items-center gap-4 rounded-[1.55rem] border border-white/[0.08] bg-[rgba(24,34,51,0.72)] p-4 text-left shadow-[0_18px_50px_rgba(2,6,23,0.24)] transition-[background-color,border-color,transform] duration-150 hover:border-white/[0.13] hover:bg-[rgba(36,49,73,0.82)] active:scale-[0.99] sm:gap-5 sm:rounded-[2rem] sm:p-6"
           >
-            <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-white/[0.03] border border-white/[0.05] transition-transform group-hover:scale-110 shadow-lg shrink-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.15rem] border border-white/[0.07] bg-white/[0.04] shadow-lg sm:h-14 sm:w-14 sm:rounded-2xl">
               <Icon className={cn("h-6 w-6 sm:h-7 sm:w-7", color)} />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base sm:text-lg font-black text-white tracking-tight leading-none mb-1.5">{label}</p>
-              <p className="text-[9px] sm:text-[10px] uppercase font-black tracking-[0.15em] text-muted-foreground truncate">{description}</p>
+            <div className="min-w-0 flex-1">
+              <p className="mb-1.5 text-base font-black leading-none tracking-tight text-white sm:text-lg">{label}</p>
+              <p className="truncate text-[8.5px] font-black uppercase tracking-[0.14em] text-muted-foreground sm:text-[10px]">{description}</p>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-white/[0.02] flex items-center justify-center text-muted-foreground group-hover:text-white transition-colors shrink-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.035] text-muted-foreground transition-colors group-hover:text-white sm:h-10 sm:w-10">
               <ChevronRight className="h-5 w-5" />
             </div>
           </button>
         ))}
       </div>
 
-      <div className="mt-12 pt-8 border-t border-white/[0.05]">
+      <div className="mt-9 border-t border-white/[0.06] pt-6 sm:mt-12 sm:pt-8">
         <Button
           variant="ghost"
-          className="h-14 sm:h-16 w-full text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-2xl sm:rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] transition-all group"
+          className="group h-14 w-full rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground transition-[background-color,color] hover:bg-destructive/5 hover:text-destructive sm:h-16 sm:rounded-[2rem]"
           onClick={signOut}
         >
-          <LogOut className="mr-3 h-4 w-4 group-hover:scale-110 transition-transform" />
+          <LogOut className="mr-3 h-4 w-4" />
           Sair da conta
         </Button>
       </div>

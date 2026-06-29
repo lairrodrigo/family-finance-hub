@@ -194,6 +194,15 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 
+  .custom-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .custom-scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Viewport Height Fix for Mobile Browsers */
   .min-h-screen-safe {
     min-height: 100dvh;

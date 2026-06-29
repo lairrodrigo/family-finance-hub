@@ -20,10 +20,10 @@ const MetasPage = () => {
     const formattedCurrent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(goal.current_amount);
 
     return (
-      <Card className="p-6 sm:p-7 border border-white/[0.05] bg-[#0C0C0E] rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl space-y-5 sm:space-y-6 transition-all hover:translate-y-[-4px] group">
+      <Card className="premium-panel-hover space-y-5 rounded-[1.75rem] border border-white/[0.08] bg-[rgba(24,34,51,0.72)] p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition-transform sm:space-y-6 sm:rounded-[2rem] sm:p-7">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5 transition-transform group-hover:scale-110 shrink-0">
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5 shrink-0">
               <Target className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
@@ -62,10 +62,11 @@ const MetasPage = () => {
     );
   }
 
-  const isTableMissing = (error as any)?.code === "PGRST116" || (error as any)?.message?.includes("not found");
+  const goalError = error as { code?: string; message?: string } | null | undefined;
+  const isTableMissing = goalError?.code === "PGRST116" || goalError?.message?.includes("not found");
   
   return (
-    <div className="flex flex-col gap-10 pb-8 animate-fade-in">
+    <div className="flex flex-col gap-7 pb-4 animate-fade-in sm:gap-10 sm:pb-8">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5 sm:space-y-1">
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tighter">Metas</h1>
@@ -74,7 +75,7 @@ const MetasPage = () => {
         {isAdmin && (
           <Button 
             onClick={() => navigate("/metas/new")}
-            className="h-12 items-center gap-2 rounded-2xl bg-white text-black font-black text-[10px] sm:text-base uppercase tracking-widest sm:capitalize sm:tracking-normal shadow-xl shadow-white/5 hover:bg-white/90 transition-all px-6 active:scale-95 shrink-0"
+            className="h-11 items-center gap-2 rounded-[1.15rem] bg-gradient-to-br from-[#5B8CFF] to-[#2F67FF] px-5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_16px_36px_rgba(91,140,255,0.25)] transition-[transform,filter] hover:brightness-105 active:scale-95 shrink-0 sm:h-12 sm:px-6 sm:text-base sm:capitalize sm:tracking-normal"
           >
             <Plus className="h-5 w-5" />
             <span className="hidden sm:inline">Nova Meta</span>
@@ -84,7 +85,7 @@ const MetasPage = () => {
       </div>
 
       {isTableMissing ? (
-        <Card className="p-10 border-dashed border-2 border-white/5 bg-white/[0.01] rounded-[2.5rem] flex flex-col items-center text-center gap-6">
+        <Card className="premium-panel flex flex-col items-center gap-6 rounded-[1.75rem] border-2 border-dashed border-white/[0.08] bg-white/[0.03] p-8 text-center sm:rounded-[2rem] sm:p-10">
           <div className="h-16 w-16 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
             <Plus className="h-8 w-8" />
           </div>
@@ -114,17 +115,6 @@ const MetasPage = () => {
         </div>
       )}
 
-      {/* Floating Action Button for mobile - Adjusted for Navigation */}
-      {isAdmin && (
-        <div className="md:hidden fixed bottom-[100px] right-6 z-[90]">
-          <Button 
-            onClick={() => navigate("/metas/new")}
-            className="h-14 w-14 rounded-2xl bg-white text-black shadow-[0_10px_30px_rgba(0,0,0,0.5)] active:scale-90 transition-all border-none"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
