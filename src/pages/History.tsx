@@ -23,6 +23,7 @@ import {
   Edit2,
   Download,
   Plus,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useCategories } from "@/hooks/useCategories";
 import { useFamilyProfiles } from "@/hooks/useFamilyProfiles";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   utensils: Utensils,
   car: Car,
   home: HomeIcon,
@@ -62,6 +63,8 @@ const ICON_MAP: Record<string, any> = {
   laptop: Laptop,
   "trending-up": TrendingUp,
 };
+
+const getErrorMessage = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback);
 
 interface Transaction {
   id: string;
@@ -126,7 +129,7 @@ const HistoryPage = () => {
   const categories = categoriesData || [];
 
   const transactions = useMemo(() => {
-    return (rawTransactions || []).map((tx: any) => ({
+    return (rawTransactions || []).map((tx) => ({
       ...tx,
       category_name: tx.categories?.name || "Sem categoria",
       category_icon: tx.categories?.icon || "ellipsis",
@@ -154,8 +157,8 @@ const HistoryPage = () => {
 
       await refetchTransactions();
       toast.success("Transação excluída.");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao excluir.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Erro ao excluir."));
     }
   };
 
@@ -184,8 +187,8 @@ const HistoryPage = () => {
 
       await refetchTransactions();
       toast.success(`${data.length} transaç${data.length === 1 ? "ão removida" : "ões removidas"} com sucesso.`);
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao excluir período.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Erro ao excluir período."));
     } finally {
       setBulkDeleting(false);
     }
@@ -536,9 +539,9 @@ const HistoryPage = () => {
                       return (
                         <Card
                           key={transaction.id}
-                          className="group rounded-[1.75rem] border-none bg-[#0C0C0E] p-4 shadow-xl transition-all hover:bg-[#121214] sm:rounded-[2.5rem] sm:p-5"
+                          className="group overflow-hidden rounded-[1.75rem] border-none bg-[#0C0C0E] p-4 shadow-xl transition-all hover:bg-[#121214] sm:rounded-[2.5rem] sm:p-5"
                         >
-                          <div className="flex items-center gap-4 sm:gap-5">
+                          <div className="flex flex-wrap items-start gap-3 sm:flex-nowrap sm:items-center sm:gap-5">
                             <div
                               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-2xl shadow-black/40 sm:h-14 sm:w-14 sm:rounded-2xl"
                               style={{ backgroundColor: `${transaction.category_color}10`, color: transaction.category_color }}
@@ -546,7 +549,7 @@ const HistoryPage = () => {
                               <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
                             </div>
 
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 basis-[calc(100%-3.75rem)] sm:basis-auto">
                               <h4 className="truncate pr-2 text-sm font-bold text-white sm:text-base">
                                 {transaction.description || transaction.category_name}
                               </h4>
@@ -581,14 +584,14 @@ const HistoryPage = () => {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="ml-[3.75rem] flex w-[calc(100%-3.75rem)] shrink-0 items-center justify-between gap-3 sm:ml-0 sm:w-auto sm:justify-end">
                               <div
                                 className={cn(
-                                  "flex shrink-0 flex-col items-end gap-1 text-base font-black tracking-tight sm:text-lg",
+                                  "flex min-w-0 shrink-0 flex-col items-end gap-1 text-sm font-black tracking-tight sm:text-lg",
                                   transaction.type === "income" ? "text-[#22C55E]" : "text-white",
                                 )}
                               >
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 whitespace-nowrap">
                                   {transaction.type === "income" ? "+" : "-"} {formatCurrency(Number(transaction.amount))}
                                 </div>
                               </div>
@@ -599,7 +602,7 @@ const HistoryPage = () => {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-10 w-10 rounded-xl border border-white/[0.05] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.05] hover:text-white"
+                                      className="h-9 w-9 rounded-xl border border-white/[0.05] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.05] hover:text-white sm:h-10 sm:w-10"
                                     >
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>

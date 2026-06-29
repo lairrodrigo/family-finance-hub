@@ -104,7 +104,7 @@ const AccountSummaryCard = ({
   return (
     <Card
       className={cn(
-        "premium-panel-hover relative min-h-[132px] overflow-hidden rounded-[1.25rem] p-4 shadow-[0_18px_45px_rgba(2,6,23,0.24)] sm:min-h-[150px] sm:rounded-[1.5rem] sm:p-5",
+        "premium-panel-hover relative min-w-0 overflow-hidden rounded-[1.25rem] p-3 shadow-[0_18px_45px_rgba(2,6,23,0.24)] sm:min-h-[150px] sm:rounded-[1.5rem] sm:p-5",
         variant === "pf"
           ? "border-blue-300/25 bg-gradient-to-br from-[#24488C] via-[#1D376B] to-[#172946]"
           : "border-emerald-300/25 bg-gradient-to-br from-[#0C6B59] via-[#0F5348] to-[#173A35]",
@@ -112,14 +112,14 @@ const AccountSummaryCard = ({
     >
       <Icon className="absolute right-3 top-3 h-14 w-14 text-white/[0.045] sm:right-4 sm:top-4 sm:h-16 sm:w-16" />
 
-      <div className="relative flex h-full flex-col justify-between gap-5 sm:gap-6">
+      <div className="relative flex h-full min-w-0 flex-col justify-between gap-5 sm:gap-6">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.24em] text-white sm:text-[10px]">
+          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white sm:text-[10px] sm:tracking-[0.24em]">
             {summary.label} <span className="ml-1 text-white/45">{summary.suffix}</span>
           </p>
           <p
             className={cn(
-              "mt-3 whitespace-nowrap font-display text-2xl font-extrabold tracking-tight sm:mt-4 sm:text-3xl",
+              "mt-3 max-w-full whitespace-nowrap font-display text-[clamp(1.35rem,5.7vw,1.875rem)] font-extrabold leading-none tracking-[-0.05em] sm:mt-4 sm:text-3xl",
               isNegative ? "text-[#FF8D8D]" : "text-white",
             )}
           >
@@ -127,14 +127,14 @@ const AccountSummaryCard = ({
           </p>
         </div>
 
-        <div className="relative grid gap-1.5 text-[10px] font-extrabold sm:text-xs">
+        <div className="relative grid gap-1.5 text-[9px] font-extrabold sm:text-xs">
           <div className="flex items-center justify-between gap-2">
             <span className="text-emerald-300">ENTRADAS</span>
-            <span className="whitespace-nowrap text-white">{showValues ? formatCurrency(summary.income) : "R$ ••••"}</span>
+            <span className="whitespace-nowrap text-right text-white">{showValues ? formatCurrency(summary.income) : "R$ ••••"}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-[#F87171]">SAÍDAS</span>
-            <span className="whitespace-nowrap text-[#FF8D8D]">{showValues ? formatCurrency(summary.expense) : "R$ ••••"}</span>
+            <span className="whitespace-nowrap text-right text-[#FF8D8D]">{showValues ? formatCurrency(summary.expense) : "R$ ••••"}</span>
           </div>
         </div>
       </div>
@@ -267,7 +267,7 @@ const HomePage = () => {
                 Extrato <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <AccountSummaryCard
                 summary={accountSummaries.pf}
                 variant="pf"

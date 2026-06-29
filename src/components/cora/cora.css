@@ -619,6 +619,62 @@
   .cora-root {
     --cora-safe-top: max(env(safe-area-inset-top, 0px), 14px);
   }
+
+  .cora-welcome {
+    padding: calc(12px + var(--cora-safe-top)) 28px 10px;
+  }
+
+  .cora-avatar-stage {
+    height: 116px;
+    margin-bottom: 12px;
+  }
+
+  .cora-avatar-stage > * {
+    transform: scale(0.88);
+  }
+
+  .cora-avatar-stage::before {
+    width: 184px;
+    height: 184px;
+    filter: blur(24px);
+  }
+
+  .cora-greeting {
+    font-size: 10px;
+    letter-spacing: 1.8px;
+  }
+
+  .cora-headline {
+    margin: 8px 0 10px;
+    font-size: clamp(32px, 8.4vw, 42px);
+    letter-spacing: -1.7px;
+  }
+
+  .cora-subtitle {
+    max-width: 300px;
+    font-size: 13.5px;
+    line-height: 1.38;
+  }
+
+  .cora-quick-actions {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .cora-quick-action-card {
+    min-height: 52px;
+    padding: 9px 12px;
+  }
+
+  .cora-input-dock {
+    padding: 8px 14px 6px;
+  }
+
+  .cora-assistant-input-card {
+    min-height: 60px;
+    border-radius: 22px;
+    padding: 8px;
+  }
 }
 
 @media (max-height: 760px) {
