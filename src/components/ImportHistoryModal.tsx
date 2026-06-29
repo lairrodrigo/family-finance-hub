@@ -157,7 +157,8 @@ export const ImportHistoryModal = ({ open, onClose, onSuccess, smartImport: exte
                       multiple
                       className="sr-only"
                       onChange={(e) => { if (e.target.files) addFiles(Array.from(e.target.files)); }}
-                      accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a,application/pdf,text/csv"
+                      /* Sem `accept`: no celular, extensoes bancarias (.ofx/.qif/.qfx) nao tem
+                         MIME registrado e o seletor as bloqueia. O motor valida o tipo depois. */
                     />
                     <div className="h-16 w-16 bg-white/[0.03] rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05] group-hover:scale-110 transition-transform">
                       <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />

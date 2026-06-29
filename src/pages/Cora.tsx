@@ -290,7 +290,8 @@ export default function Cora() {
           type="file"
           multiple
           className="sr-only"
-          accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.webp,application/pdf,text/csv,image/jpeg,image/png,image/webp"
+          /* Sem `accept`: no celular, extensoes bancarias (.ofx/.qif/.qfx) nao tem
+             MIME registrado e o seletor as bloqueia. O motor valida o tipo depois. */
           onChange={(event) => {
             handleAttachFiles(event.target.files);
             event.target.value = "";

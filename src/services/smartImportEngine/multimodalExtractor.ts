@@ -111,13 +111,8 @@ export const extractMultimodal = async (
         }
 
         return {
-          expenses: [{
-            valor: 0,
-            data: new Date().toISOString().split("T")[0],
-            descricao: `Anexo de Documento (${file.name})`,
-            categoria: "Outros",
-            origem: "pdf",
-          }],
+          expenses: [],
+          error: "Nao consegui ler movimentacoes neste PDF. Tente um print/foto das paginas principais ou um arquivo CSV/OFX.",
         };
       }
     }

@@ -181,7 +181,8 @@ export const ConversationalInput = ({ onSuccess }: ConversationalInputProps) => 
                 type="file"
                 multiple
                 className="sr-only"
-                accept=".ofx,.qif,.qfx,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a,application/pdf,text/csv"
+                /* Sem `accept`: no celular, extensoes bancarias (.ofx/.qif/.qfx) nao tem
+                   MIME registrado e o seletor as bloqueia. O motor valida o tipo depois. */
                 onChange={(e) => {
                   handleFiles(e.target.files);
                   e.target.value = "";
