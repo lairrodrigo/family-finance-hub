@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { BarChart3, Clock, Home, MoreHorizontal, ShoppingBag, Target } from "lucide-react";
+import { BarChart3, Clock, Home, MoreHorizontal, Target, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
+  { to: "/carteira", icon: Wallet, label: "Carteira" },
   { to: "/diagnostics", icon: BarChart3, label: "Diagnóstico" },
-  { to: "/shopping", icon: ShoppingBag, label: "Compras" },
   { to: "/history", icon: Clock, label: "Histórico" },
   { to: "/metas", icon: Target, label: "Metas" },
   { to: "/more", icon: MoreHorizontal, label: "Mais" },

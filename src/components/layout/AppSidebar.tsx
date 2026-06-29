@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeftRight, BarChart3, CreditCard, Home, Settings, ShoppingBag, Target, Users } from "lucide-react";
+import { ArrowLeftRight, BarChart3, CreditCard, Home, Settings, ShoppingBag, Target, Users, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -19,7 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Visão Geral" },
+  { to: "/", icon: Home, label: "Cora" },
+  { to: "/carteira", icon: Wallet, label: "Carteira" },
   { to: "/diagnostics", icon: BarChart3, label: "Diagnóstico" },
   { to: "/transactions", icon: ArrowLeftRight, label: "Extrato" },
   { to: "/shopping", icon: ShoppingBag, label: "Compras" },

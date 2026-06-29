@@ -26,6 +26,7 @@ const ShoppingListDetail = lazy(() => import("./pages/ShoppingListDetail"));
 const Cards = lazy(() => import("./pages/Cards"));
 const More = lazy(() => import("./pages/More"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Cora = lazy(() => import("./pages/Cora"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -110,6 +111,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Cora keeps its own immersive mobile shell, so it should not be wrapped by AppLayout.
+function ProtectedFullscreen({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+
+  return <>{children}</>;
+}
+
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -133,7 +147,9 @@ const App = () => (
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedFullscreen><Cora /></ProtectedFullscreen>} />
+                <Route path="/cora" element={<Navigate to="/" replace />} />
+                <Route path="/carteira" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
                 <Route path="/diagnostics" element={<ProtectedRoute><Diagnostics /></ProtectedRoute>} />
                 <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
