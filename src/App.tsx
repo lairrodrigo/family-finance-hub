@@ -8,6 +8,7 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Loader2 } from "lucide-react";
 
 // Lazy loading pages for better performance
@@ -95,6 +96,10 @@ const PageLoader = () => (
   </div>
 );
 
+const sidebarStyle = {
+  "--sidebar-width": "clamp(12rem, 22vw, 16rem)",
+} as React.CSSProperties;
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -105,13 +110,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <SidebarProvider>
+    <SidebarProvider style={sidebarStyle}>
       <AppLayout>{children}</AppLayout>
     </SidebarProvider>
   );
 }
 
-// Cora keeps its own immersive mobile shell, so it should not be wrapped by AppLayout.
+// Cora keeps its own immersive shell, but tablet+ uses the shared sidebar instead of bottom tabs.
 function ProtectedFullscreen({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -121,7 +126,16 @@ function ProtectedFullscreen({ children }: { children: React.ReactNode }) {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  return <>{children}</>;
+  return (
+    <SidebarProvider style={sidebarStyle}>
+      <div className="app-shell flex min-h-screen w-full overflow-x-hidden">
+        <div className="hidden md:block">
+          <AppSidebar />
+        </div>
+        <div className="flex min-w-0 flex-1">{children}</div>
+      </div>
+    </SidebarProvider>
+  );
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {

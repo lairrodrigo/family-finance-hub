@@ -163,7 +163,7 @@ export function Thread({
   scrollRef: RefObject<HTMLDivElement>;
 }) {
   return (
-    <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 18 }}>
+    <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "calc(14px + var(--cora-safe-top, env(safe-area-inset-top, 0px))) 16px 16px", display: "flex", flexDirection: "column", gap: 18 }}>
       {messages.map((m) => (
         <MessageRow key={m.id} m={m} onConfirmAll={onConfirmAll} onEditEntry={onEditEntry} onRemoveEntry={onRemoveEntry} onAnswerFollowup={onAnswerFollowup} />
       ))}

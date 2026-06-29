@@ -24,6 +24,7 @@
   --glass: rgba(24, 34, 51, 0.72);
   --glass-strong: rgba(36, 49, 73, 0.82);
   --primary-gradient: linear-gradient(135deg, #6d7cff 0%, #b99cff 100%);
+  --cora-safe-top: env(safe-area-inset-top, 0px);
 
   font-family: "Manrope", system-ui, -apple-system, sans-serif;
   color: var(--ink);
@@ -151,7 +152,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0;
-  padding: calc(clamp(22px, 5.2dvh, 42px) + env(safe-area-inset-top, 0px)) 24px 12px;
+  padding: calc(clamp(22px, 5.2dvh, 42px) + var(--cora-safe-top)) 24px 12px;
   text-align: center;
   position: relative;
   animation: cora-home-in 0.58s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -444,7 +445,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .cora-root {
     align-items: stretch;
   }
@@ -614,10 +615,16 @@
   }
 }
 
+@media (max-width: 767px) {
+  .cora-root {
+    --cora-safe-top: max(env(safe-area-inset-top, 0px), 14px);
+  }
+}
+
 @media (max-height: 760px) {
   .cora-welcome {
     justify-content: flex-start;
-    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+    padding-top: calc(14px + var(--cora-safe-top));
     padding-bottom: 6px;
   }
 

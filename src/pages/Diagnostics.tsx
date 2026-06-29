@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bar,
@@ -36,6 +36,7 @@ const compactCurrency = (value: number) =>
 const DiagnosticsPage = () => {
   const navigate = useNavigate();
   const { showValues } = useSettings();
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const { data: transactions, isLoading } = useTransactions({ year: currentYear });
@@ -105,6 +106,7 @@ const DiagnosticsPage = () => {
 
   const maskedCurrency = (value: number) => (showValues ? formatCurrency(value) : "R$ ••••");
   const categoryTotal = analytics.currentExpense || 1;
+  const visibleCategories = showAllCategories ? analytics.categoryData : analytics.categoryData.slice(0, 6);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-7 pb-8 animate-fade-in">
@@ -227,7 +229,7 @@ const DiagnosticsPage = () => {
                       <p className="text-sm font-extrabold text-[#65738A]">Sem gastos no mês para analisar.</p>
                     </div>
                   ) : (
-                    analytics.categoryData.slice(0, 6).map((category) => {
+                    visibleCategories.map((category) => {
                       const percentage = Math.round((category.value / categoryTotal) * 100);
                       return (
                         <div key={category.name} className="grid grid-cols-[1fr_auto_auto] items-center gap-4">
@@ -242,13 +244,18 @@ const DiagnosticsPage = () => {
                     })
                   )}
 
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/history")}
-                    className="mt-5 h-11 rounded-2xl border-[#C8D4F4] bg-white/50 px-5 text-xs font-extrabold text-[#243047] hover:bg-white"
-                  >
-                    Ver todas as categorias <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
+                  {analytics.categoryData.length > 6 && (
+                    <Button
+                      variant="outline"
+                      type="button"
+                      aria-expanded={showAllCategories}
+                      onClick={() => setShowAllCategories((current) => !current)}
+                      className="mt-5 h-11 rounded-2xl border-[#C8D4F4] bg-white/50 px-5 text-xs font-extrabold text-[#243047] hover:bg-white"
+                    >
+                      {showAllCategories ? "Ver menos categorias" : "Ver todas as categorias"}
+                      <ChevronDown className={cn("ml-2 h-4 w-4 transition-transform", showAllCategories && "rotate-180")} />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>

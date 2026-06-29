@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ChevronRight, CreditCard, Eye, EyeOff, Loader2, Lock, Plus, Target, UserRound } from "lucide-react";
+import { Building2, ChevronRight, Eye, EyeOff, Loader2, Lock, Target, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -11,7 +11,6 @@ import { QuickAddTransaction } from "@/components/dashboard/QuickAddTransaction"
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAccounts, type Account } from "@/hooks/useAccounts";
-import { useCards } from "@/hooks/useCards";
 import { useCategories } from "@/hooks/useCategories";
 import { useGoals } from "@/hooks/useGoals";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -105,22 +104,22 @@ const AccountSummaryCard = ({
   return (
     <Card
       className={cn(
-        "premium-panel-hover relative min-h-[190px] overflow-hidden rounded-[1.5rem] p-6",
+        "premium-panel-hover relative min-h-[132px] overflow-hidden rounded-[1.25rem] p-4 shadow-[0_18px_45px_rgba(2,6,23,0.24)] sm:min-h-[150px] sm:rounded-[1.5rem] sm:p-5",
         variant === "pf"
-          ? "border-blue-300/20 bg-gradient-to-br from-[#203A74] via-[#1B2D55] to-[#182233]"
-          : "border-emerald-300/20 bg-gradient-to-br from-[#0D5C4B] via-[#12463D] to-[#182233]",
+          ? "border-blue-300/25 bg-gradient-to-br from-[#24488C] via-[#1D376B] to-[#172946]"
+          : "border-emerald-300/25 bg-gradient-to-br from-[#0C6B59] via-[#0F5348] to-[#173A35]",
       )}
     >
-      <Icon className="absolute right-5 top-5 h-20 w-20 text-white/[0.06]" />
+      <Icon className="absolute right-3 top-3 h-14 w-14 text-white/[0.045] sm:right-4 sm:top-4 sm:h-16 sm:w-16" />
 
-      <div className="relative flex h-full flex-col justify-between gap-7">
+      <div className="relative flex h-full flex-col justify-between gap-5 sm:gap-6">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white">
+          <p className="text-[9px] font-black uppercase tracking-[0.24em] text-white sm:text-[10px]">
             {summary.label} <span className="ml-1 text-white/45">{summary.suffix}</span>
           </p>
           <p
             className={cn(
-              "mt-6 font-display text-3xl font-extrabold tracking-tight",
+              "mt-3 whitespace-nowrap font-display text-2xl font-extrabold tracking-tight sm:mt-4 sm:text-3xl",
               isNegative ? "text-[#FF8D8D]" : "text-white",
             )}
           >
@@ -128,14 +127,14 @@ const AccountSummaryCard = ({
           </p>
         </div>
 
-        <div className="relative grid gap-2 text-sm font-extrabold">
-          <div className="flex items-center justify-between gap-3">
+        <div className="relative grid gap-1.5 text-[10px] font-extrabold sm:text-xs">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-emerald-300">ENTRADAS</span>
-            <span className="text-white">{showValues ? formatCurrency(summary.income) : "R$ ••••"}</span>
+            <span className="whitespace-nowrap text-white">{showValues ? formatCurrency(summary.income) : "R$ ••••"}</span>
           </div>
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-[#F87171]">SAÍDAS</span>
-            <span className="text-[#FF8D8D]">{showValues ? formatCurrency(summary.expense) : "R$ ••••"}</span>
+            <span className="whitespace-nowrap text-[#FF8D8D]">{showValues ? formatCurrency(summary.expense) : "R$ ••••"}</span>
           </div>
         </div>
       </div>
@@ -146,15 +145,14 @@ const AccountSummaryCard = ({
 const HomePage = () => {
   const { showValues, toggleShowValues } = useSettings();
   const { familyId, profileLoading } = useAuth();
-  const { isAdmin, canManageAssets, canCreateTransaction } = usePermissions();
+  const { isAdmin, canCreateTransaction } = usePermissions();
   const navigate = useNavigate();
 
   const { data: fullTransactions, isLoading: txsLoading, refetch: refetchTransactions } = useTransactions();
   const { data: categories, isLoading: catsLoading } = useCategories();
-  const { data: cards, isLoading: cardsLoading } = useCards();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
 
-  const loading = txsLoading || catsLoading || cardsLoading || accountsLoading;
+  const loading = txsLoading || catsLoading || accountsLoading;
 
   const { totals, balance } = useMemo(() => {
     const income = (fullTransactions || [])
@@ -221,38 +219,38 @@ const HomePage = () => {
 
       <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-12">
         <div className="flex flex-col gap-7 lg:col-span-8">
-          <Card className="premium-light-card relative overflow-hidden rounded-[1.5rem] p-6 text-[#0F172A] sm:p-8 md:rounded-[2rem] md:p-10">
+          <Card className="premium-light-card relative overflow-hidden rounded-[1.5rem] p-5 text-[#0F172A] sm:p-6 md:rounded-[2rem] md:p-7">
             <div className="flex items-center justify-between gap-4">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#2F67FF]">Saldo disponível</p>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleShowValues}
-                className="h-10 w-10 min-w-0 rounded-full text-[#172033] hover:bg-[#EAF1FF] hover:text-[#0F172A]"
+                className="h-9 w-9 min-w-0 rounded-full text-[#172033] hover:bg-[#EAF1FF] hover:text-[#0F172A]"
               >
-                {showValues ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                {showValues ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               </Button>
             </div>
 
-            <div className="mt-8 flex items-baseline gap-3 overflow-hidden md:mt-10">
+            <div className="mt-5 flex items-baseline gap-3 overflow-hidden md:mt-6">
               <span className="text-2xl font-extrabold text-[#65738A] sm:text-3xl">R$</span>
-              <p className="font-display truncate break-all text-5xl font-extrabold tracking-tighter text-[#0F172A] sm:text-7xl md:text-8xl lg:text-7xl">
+              <p className="font-display truncate break-all text-5xl font-extrabold tracking-tighter text-[#0F172A] sm:text-6xl md:text-7xl lg:text-7xl">
                 {showValues ? balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "••••••"}
               </p>
             </div>
 
-            <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between md:mt-12">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#172033] shadow-inner">
-                  <Lock className="h-6 w-6" />
+            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mt-7">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#172033] shadow-inner sm:h-12 sm:w-12">
+                  <Lock className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#7B8798]">Comprometido</span>
-                  <span className="text-lg font-extrabold text-[#0F172A]">{showValues ? formatCurrency(0) : "R$ ••••"}</span>
+                  <span className="text-base font-extrabold text-[#0F172A] sm:text-lg">{showValues ? formatCurrency(0) : "R$ ••••"}</span>
                 </div>
               </div>
 
-              <Button onClick={() => navigate("/history")} className="h-12 px-8 text-sm sm:h-14">
+              <Button onClick={() => navigate("/history")} className="h-10 px-7 text-xs sm:h-11 sm:text-sm">
                 Detalhes
               </Button>
             </div>
@@ -269,7 +267,7 @@ const HomePage = () => {
                 Extrato <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <AccountSummaryCard
                 summary={accountSummaries.pf}
                 variant="pf"
@@ -289,54 +287,6 @@ const HomePage = () => {
 
           {canCreateTransaction && <QuickAddTransaction onSuccess={() => refetchTransactions()} />}
 
-          <div className="space-y-5">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="font-display text-xl font-extrabold tracking-tight text-white">Cartões de crédito</h2>
-              <Button
-                variant="ghost"
-                className="text-[10px] font-black uppercase tracking-[0.18em] text-primary hover:bg-primary/10"
-                onClick={() => navigate("/cards")}
-              >
-                Ver todos <ChevronRight className="ml-1 h-3 w-3" />
-              </Button>
-            </div>
-
-            <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
-              {canManageAssets && (
-                <Card
-                  onClick={() => navigate("/cards")}
-                  className="premium-panel-hover flex h-[142px] min-w-[210px] cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-white/[0.10] bg-white/[0.03]"
-                >
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.06] text-primary transition-transform group-hover:scale-110">
-                    <Plus className="h-5 w-5" />
-                  </div>
-                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground">Adicionar cartão</span>
-                </Card>
-              )}
-
-              {(cards || []).map((card) => (
-                <Card
-                  key={card.id}
-                  className="relative flex h-[142px] min-w-[290px] flex-col justify-between overflow-hidden rounded-[1.5rem] border-blue-300/20 bg-gradient-to-br from-[#5B8CFF] via-[#2F67FF] to-[#203A74] p-6 text-white shadow-2xl shadow-blue-950/25"
-                >
-                  <CreditCard className="absolute -right-2 -top-2 h-24 w-24 text-white/[0.08]" />
-                  <div className="relative flex items-start justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-md">
-                      <CreditCard className="h-5 w-5 opacity-90" />
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/55">{card.brand}</span>
-                  </div>
-                  <div className="relative">
-                    <p className="mb-2 font-display text-lg font-extrabold tracking-[0.35em]">•••• {card.last_four}</p>
-                    <div className="flex items-end justify-between gap-4">
-                      <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-white/65">{card.name}</p>
-                      <p className="text-sm font-extrabold">R$ {card.credit_limit?.toLocaleString("pt-BR")}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="flex flex-col gap-7 lg:col-span-4">

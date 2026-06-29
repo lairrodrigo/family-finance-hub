@@ -222,7 +222,7 @@ export default function Cora() {
           onAttach={() => fileInputRef.current?.click()}
           disabled={phase === "thinking"}
         />
-        <MobileBottomNav embedded />
+        <MobileBottomNav embedded className="md:hidden" />
 
         {phase === "recording" && <RecordingOverlay seconds={duration} onCancel={handleCancelRecording} onStop={handleStopRecording} />}
       </main>
